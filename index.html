@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mindmap — Ecosistema Academy Koachify</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #0C1417; color: #e0e0e0; overflow: hidden; height: 100vh; width: 100vw; }
+
+/* ── TOOLBAR (ora una sola riga) ── */
+.bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(12,20,23,.97); border-bottom: 1px solid #1e2e35;
+  display: flex; flex-direction: column;
+}
+.bar-r1 {
+  display: flex; align-items: center; padding: 0 12px; gap: 5px;
+  height: 40px; flex-wrap: nowrap; overflow-x: auto;
+}
+.bar h1 { font-size: 12px; font-weight: 700; color: #88C057; white-space: nowrap; margin-right: 4px; }
+.sep { width: 1px; height: 20px; background: #1e2e35; flex-shrink: 0; }
+.lbl { font-size: 10px; color: #3a5060; white-space: nowrap; flex-shrink: 0; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+/* Bottoni filtro */
+.btn {
+  padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700;
+  border: 1px solid #1e2e35; background: rgba(255,255,255,.03);
+  color: #6a8090; cursor: pointer; transition: all .15s; white-space: nowrap; flex-shrink: 0;
+}
+.btn:hover { background: rgba(255,255,255,.08); color: #e0e0e0; border-color: #3a5060; }
+
+/* Sistema */
+.btn.pros.on { background: #EF9F27; border-color: #EF9F27; color: #1a0a00; }
+.btn.lib.on  { background: #378ADD; border-color: #378ADD; color: #fff; }
+.btn.ser.on  { background: #639922; border-color: #639922; color: #fff; }
+.btn.arch.on { background: #283E4A; border-color: #4a6070; color: #B5D4F4; }
+
+/* Pianeta */
+.btn.pl-attr.on { background:#3a2200; border-color:#EF9F27; color:#FAC775; }
+.btn.pl-conv.on { background:#3a2200; border-color:#EF9F27; color:#FAC775; }
+.btn.pl-viag.on { background:#3a2200; border-color:#EF9F27; color:#FAC775; }
+.btn.pl-arch2.on{ background:#001a30; border-color:#378ADD; color:#B5D4F4; }
+.btn.pl-lab.on  { background:#001a30; border-color:#378ADD; color:#B5D4F4; }
+.btn.pl-molt.on { background:#001a30; border-color:#378ADD; color:#B5D4F4; }
+.btn.pl-buss.on { background:#0d2a05; border-color:#639922; color:#C0DD97; }
+.btn.pl-vill.on { background:#0d2a05; border-color:#639922; color:#C0DD97; }
+.btn.pl-scud.on { background:#0d2a05; border-color:#639922; color:#C0DD97; }
+
+/* Formato contenuto */
+.btn.fmt-lm.on  { background: #72243E; border-color: #A04060; color: #F4C0D1; }
+.btn.fmt-yt.on  { background: #0C447C; border-color: #2060A0; color: #B5D4F4; }
+.btn.fmt-ac.on  { background: #27500A; border-color: #407010; color: #C0DD97; }
+
+/* Framework — colori per sistema (stile più scuro dei pianeti) */
+.btn.fw-pros.on { background:#120500; border-color:#EF9F27; color:#F5E0A0; }
+.btn.fw-lib.on  { background:#000810; border-color:#378ADD; color:#B5D4F4; }
+.btn.fw-ser.on  { background:#010600; border-color:#639922; color:#C0DD97; }
+
+/* Azioni toolbar */
+.btn.act { background: rgba(255,255,255,.06); color: #8a9aa0; border-color: #2a3a40; }
+.btn.act:hover { background: rgba(255,255,255,.12); color: #e0e0e0; }
+.btn.act.on { background: #88C057; border-color: #88C057; color: #0C1417; }
+
+/* Badge sul pulsante "☰ Filtri" quando ci sono filtri attivi */
+#btnFiltri { position: relative; }
+#btnFiltri.has-filters::after {
+  content: ''; position: absolute; top: -2px; right: -2px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #EF9F27; border: 1.5px solid #0C1417;
+}
+
+.zl { font-size: 10.5px; color: #5a7a85; min-width: 38px; text-align: center; }
+
+/* ── SIDEBAR FILTRI (pannello laterale a scomparsa) ── */
+.sidebar {
+  position: fixed; top: 40px; left: 0; bottom: 0; width: 280px; z-index: 90;
+  background: rgba(10,16,20,.985); border-right: 1px solid #1e2e35;
+  transform: translateX(-100%); transition: transform .25s ease;
+  overflow-y: auto;
+}
+.sidebar.open { transform: translateX(0); }
+.sb-inner { padding: 14px 14px 24px; }
+.sb-sec { margin-bottom: 16px; }
+.sb-h {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+  color: #88C057; font-weight: 800; margin-bottom: 8px;
+}
+.sb-btns { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.sb-grp-h {
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .04em; margin: 9px 0 5px; padding-left: 2px;
+}
+.sb-grp-h.pros { color: #EF9F27; }
+.sb-grp-h.lib  { color: #378ADD; }
+.sb-grp-h.ser  { color: #639922; }
+/* Casella ricerca */
+.sb-search {
+  width: 100%; padding: 8px 11px; border-radius: 8px;
+  border: 1px solid #2a3a40; background: rgba(255,255,255,.04);
+  color: #e0e0e0; font-size: 12px; font-family: inherit;
+}
+.sb-search:focus { outline: none; border-color: #88C057; background: rgba(136,192,87,.06); }
+.sb-search-res { font-size: 10px; color: #5a7a85; margin-top: 6px; min-height: 12px; }
+/* Footer sidebar: stato filtri + reset */
+.sb-footer { border-top: 1px solid #1e2e35; padding-top: 12px; margin-top: 4px; }
+.sb-status { font-size: 10px; color: #7a9aa5; line-height: 1.5; margin-bottom: 9px; }
+.sb-status b { color: #88C057; }
+
+/* ── CANVAS ── */
+#wrap {
+  position: fixed; top: 40px; left: 0; right: 0; bottom: 0;
+  overflow: hidden; cursor: crosshair;
+}
+#wrap.pan { cursor: grab; }
+#wrap.panning { cursor: grabbing; }
+/* transform-origin: 0 0 è essenziale: allinea la matematica di zoom/pan
+   e il rettangolo della mini-mappa all'angolo alto-sinistra dell'SVG */
+svg { position: absolute; top: 0; left: 0; overflow: visible; transform-origin: 0 0; }
+
+/* ── EVIDENZIAZIONE RICERCA (anello pulsante) ── */
+.hl-ring { animation: hlpulse 1.1s ease-in-out infinite; }
+@keyframes hlpulse {
+  0%, 100% { stroke-opacity: 1;  stroke-width: 3; }
+  50%      { stroke-opacity: .25; stroke-width: 7; }
+}
+
+/* ── TOOLTIP ── */
+.tip {
+  position: fixed; pointer-events: none; z-index: 300;
+  background: rgba(6,12,16,.97); border: 1px solid #2a3e48;
+  border-radius: 10px; padding: 11px 14px; max-width: 310px;
+  font-size: 11px; line-height: 1.6; opacity: 0;
+  transition: opacity .15s; box-shadow: 0 10px 32px rgba(0,0,0,.8);
+}
+.tip.show { opacity: 1; }
+.tip-n { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+.tip-p { font-size: 10px; color: #4a6a7a; margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.tip-s { font-style: italic; color: #5a7a85; margin-bottom: 6px; font-size: 10.5px; }
+.tip-d { color: #7a9aa5; font-size: 10.5px; margin-bottom: 7px; }
+.tip-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tip-tag { padding: 2px 7px; border-radius: 10px; font-size: 9.5px; font-weight: 700; }
+.t-lm  { background: rgba(114,36,62,.35); color: #F4C0D1; border: 1px solid rgba(114,36,62,.5); }
+.t-yt  { background: rgba(12,68,124,.35);  color: #B5D4F4; border: 1px solid rgba(12,68,124,.5); }
+.t-ac  { background: rgba(39,80,10,.35);   color: #C0DD97; border: 1px solid rgba(39,80,10,.5); }
+
+/* ── MINI-MAPPA ── */
+.minimap {
+  position: fixed; bottom: 14px; left: 14px; z-index: 50;
+  width: 180px; height: 110px;
+  background: rgba(8,14,18,.95); border: 1px solid #1e2e35;
+  border-radius: 8px; overflow: hidden; cursor: pointer;
+  transition: left .25s ease;
+}
+/* Quando la sidebar è aperta, sposta la mini-mappa a destra del pannello */
+body.sidebar-open .minimap { left: 296px; }
+.minimap svg { pointer-events: none; }
+.mm-viewport {
+  position: absolute; border: 1.5px solid rgba(136,192,87,.6);
+  border-radius: 2px; pointer-events: none;
+  background: rgba(136,192,87,.06);
+}
+
+/* ── LEGENDA ── */
+.leg {
+  position: fixed; bottom: 14px; right: 14px; z-index: 50;
+  background: rgba(8,14,18,.95); border: 1px solid #1e2e35;
+  border-radius: 9px; padding: 10px 13px; font-size: 9.5px; color: #5a7a85;
+  max-width: 170px;
+}
+.leg b { font-size: 9.5px; color: #88C057; display: block; margin-bottom: 6px; }
+.lr { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.lc { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.lr2 { width: 11px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.leg hr { border: none; border-top: 1px solid #1e2e35; margin: 5px 0; }
+</style>
+</head>
+<body>
+
+<!-- ══ TOOLBAR: una sola riga con titolo, Filtri, zoom, fit/centro, toggle ══ -->
+<div class="bar">
+  <div class="bar-r1">
+    <h1>🗺 Mindmap Academy Koachify</h1>
+    <div class="sep"></div>
+    <!-- Apre/chiude la sidebar dei filtri -->
+    <button class="btn act" id="btnFiltri" onclick="toggleSidebar()">☰ Filtri</button>
+    <div class="sep"></div>
+    <!-- Zoom centrato sul cursore (vedi zBy) -->
+    <button class="btn act" onclick="zBy(1.25)">＋ Zoom</button>
+    <button class="btn act" onclick="zBy(0.8)">－ Zoom</button>
+    <span class="zl" id="zl">100%</span>
+    <div class="sep"></div>
+    <button class="btn act" onclick="fit()">⤢ Tutto</button>
+    <button class="btn act" onclick="goTo(0,0,0.7)">⌖ Centro</button>
+    <div class="sep"></div>
+    <button class="btn act on" id="bdet" onclick="togDet()">⬛ Argomenti ON</button>
+    <button class="btn act on" id="bconn" onclick="togConn()">— Connessioni ON</button>
+  </div>
+</div>
+
+<!-- ══ SIDEBAR FILTRI: Ricerca + Sistema + Pianeta(raggruppato) + Formato + footer ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-inner">
+
+    <!-- 1) RICERCA -->
+    <div class="sb-sec">
+      <div class="sb-h">Ricerca</div>
+      <input id="searchBox" class="sb-search" type="text" autocomplete="off"
+             placeholder="Cerca per nome, pilastro, descrizione…"
+             oninput="doSearch(this.value)">
+      <div class="sb-search-res" id="searchRes"></div>
+    </div>
+
+    <!-- 2) FILTRO SISTEMA (stessi id e funzioni dell'originale) -->
+    <div class="sb-sec">
+      <div class="sb-h">Sistema</div>
+      <div class="sb-btns">
+        <button class="btn pros" id="f-pros" onclick="fSys('pros')">🟡 Prosperità</button>
+        <button class="btn lib"  id="f-lib"  onclick="fSys('lib')">🔵 Libertà</button>
+        <button class="btn ser"  id="f-ser"  onclick="fSys('ser')">🟢 Serenità</button>
+        <button class="btn arch" id="f-arch" onclick="fSys('arch')">🏗 Architettura</button>
+        <button class="btn act on" id="f-all" onclick="fSys('all')">✕ Reset</button>
+      </div>
+    </div>
+
+    <!-- 3) FILTRO PIANETA, raggruppato per sistema con intestazioni colorate -->
+    <div class="sb-sec">
+      <div class="sb-h">Pianeta</div>
+
+      <div class="sb-grp-h pros">Prosperità</div>
+      <div class="sb-btns">
+        <button class="btn pl-attr" id="p-attr" onclick="fPlan('attr')">Attrazione</button>
+        <button class="btn pl-conv" id="p-conv" onclick="fPlan('conv')">Conversione</button>
+        <button class="btn pl-viag" id="p-viag" onclick="fPlan('viag')">Viaggio</button>
+      </div>
+
+      <div class="sb-grp-h lib">Libertà</div>
+      <div class="sb-btns">
+        <button class="btn pl-arch2" id="p-arch2" onclick="fPlan('arch2')">Architettura</button>
+        <button class="btn pl-lab"   id="p-lab"   onclick="fPlan('lab')">Laboratorio</button>
+        <button class="btn pl-molt"  id="p-molt"  onclick="fPlan('molt')">Moltiplicazione</button>
+      </div>
+
+      <div class="sb-grp-h ser">Serenità</div>
+      <div class="sb-btns">
+        <button class="btn pl-buss" id="p-buss" onclick="fPlan('buss')">Bussola</button>
+        <button class="btn pl-vill" id="p-vill" onclick="fPlan('vill')">Villaggio</button>
+        <button class="btn pl-scud" id="p-scud" onclick="fPlan('scud')">Scuderia</button>
+      </div>
+    </div>
+
+    <!-- 4) FILTRO FRAMEWORK — generato dinamicamente in JS raggruppato per Pianeta -->
+    <div class="sb-sec">
+      <div class="sb-h">Framework</div>
+      <div id="fw-section"></div>
+    </div>
+
+    <!-- 5) FILTRO FORMATO (stessi id e funzioni dell'originale) -->
+    <div class="sb-sec">
+      <div class="sb-h">Formato</div>
+      <div class="sb-btns">
+        <button class="btn fmt-lm" id="f-lm" onclick="fFmt('Lead Magnet')">🧲 Lead Magnet</button>
+        <button class="btn fmt-yt" id="f-yt" onclick="fFmt('Video YouTube')">▶ Video YouTube</button>
+        <button class="btn fmt-ac" id="f-ac" onclick="fFmt('Modulo Academy')">📚 Modulo Academy</button>
+        <button class="btn act on" id="f-fmt-all" onclick="fFmt('all')">✕ Reset formato</button>
+      </div>
+    </div>
+
+    <!-- 6) FOOTER: indicatore filtri attivi + reset globale -->
+    <div class="sb-footer">
+      <div class="sb-status" id="filterStatus">Nessun filtro attivo</div>
+      <button class="btn act" onclick="resetAll()">↺ Reset tutto</button>
+    </div>
+
+  </div>
+</aside>
+
+<!-- Canvas SVG principale -->
+<div id="wrap">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<!-- Tooltip a comparsa (popolato in showT) -->
+<div class="tip" id="tip">
+  <div class="tip-p" id="tp"></div>
+  <div class="tip-n" id="tn"></div>
+  <div class="tip-s" id="ts"></div>
+  <div class="tip-d" id="td"></div>
+  <div class="tip-tags" id="tt"></div>
+</div>
+
+<!-- Mini-mappa: cliccabile/trascinabile per centrare la vista -->
+<div class="minimap" id="mm">
+  <svg id="mm-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="mm-viewport" id="mm-vp"></div>
+</div>
+
+<!-- Legenda colori e gesti -->
+<div class="leg">
+  <b>LEGENDA</b>
+  <div class="lr"><div class="lc" style="background:#88C057"></div>Radice</div>
+  <div class="lr"><div class="lc" style="background:#EF9F27"></div>Prosperità</div>
+  <div class="lr"><div class="lc" style="background:#378ADD"></div>Libertà</div>
+  <div class="lr"><div class="lc" style="background:#639922"></div>Serenità</div>
+  <div class="lr"><div class="lc" style="background:#283E4A"></div>Architettura</div>
+  <hr>
+  <div class="lr"><div class="lr2" style="background:#2a1800;border:1px solid #EF9F27"></div>Pianeta / Framework</div>
+  <div class="lr"><div class="lr2" style="background:#050502;border:1px solid #888;opacity:.5"></div>Passo Come fare</div>
+  <hr>
+  <div class="lr"><div class="lr2" style="background:rgba(114,36,62,.4);border:1px solid #72243E"></div>🧲 Lead Magnet</div>
+  <div class="lr"><div class="lr2" style="background:rgba(12,68,124,.4);border:1px solid #0C447C"></div>▶ YouTube</div>
+  <div class="lr"><div class="lr2" style="background:rgba(39,80,10,.4);border:1px solid #27500A"></div>📚 Academy</div>
+  <hr>
+  <div style="font-size:9px;color:#2a4050;line-height:1.5">
+    Scroll = zoom sul cursore<br>
+    Drag sfondo = pan<br>
+    Hover = dettaglio<br>
+    Filtri = isola sezione
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// SEZIONE: DATI (inline — generati da Python)
+// ═══════════════════════════════════════════════════════
+const NODES=[
+{id:'root',label:'ACADEMY\nKOACHIFY',x:0,y:0,group:'all',color:'#88C057',tc:'#0C1417',r:72,sub:'Ecosistema formativo per Coach, Formatori e Consulenti',desc:'27 Framework Operativi · 32 Moduli · 3 Sistemi Solari · 9 Pianeti · 27 Pilastri'},
+// ARCH
+{id:'arch',label:'ARCHITETTURA\nECOSISTEMA',x:-500,y:0,group:'arch',color:'#283E4A',tc:'#B5D4F4',r:55,sub:'Asset prodotti nella sessione di progettazione',desc:'Materiali Drive · Piani abbonamento · 32 Moduli · 27 Framework'},
+{id:'drive',label:'MATERIALI\nDRIVE',x:-830,y:-210,group:'arch',color:'#1a0a12',border:'#72243E',tc:'#F4C0D1',rw:155,rh:52,sub:'50 file — Taki Moore + formatori esterni',desc:'Trascrizioni masterclass in inglese: Email Marketing · Sell by Chat · Social Content · Lead Gen & Funnel · Mindset & Brand'},
+{id:'piani',label:'PIANI\nABBONAMENTO',x:-830,y:-70,group:'arch',color:'#0f191d',border:'#283E4A',tc:'#B5D4F4',rw:155,rh:52,sub:'Semplifika €97 · Kresci €157 · Amplifika €247',desc:'3 livelli non sequenziali. Semplifika: 12 moduli base. Kresci/Amplifika: 20 moduli avanzati + tutor DWY-DFY'},
+{id:'moduli',label:'32 MODULI\nACADEMY',x:-830,y:70,group:'arch',color:'#0a1a0a',border:'#27500A',tc:'#88C057',rw:155,rh:52,sub:'18 da produrre · 14 da adattare da Drive',desc:'Distribuiti sui 3 Sistemi e 9 Pianeti. Badge Semplifika vs Kresci/Amplifika per ogni modulo'},
+{id:'fwarch',label:'27\nFRAMEWORK',x:-830,y:210,group:'arch',color:'#000e1a',border:'#0C447C',tc:'#B5D4F4',rw:155,rh:52,sub:'1 per Pilastro — Cosa fare + Come in 4-5 passi',desc:'Usabili come Lead Magnet · Video YouTube · Modulo Academy. Struttura operativa completa'},
+// PROS
+{id:'pros',label:'SISTEMA\nPROSPERITÀ',x:420,y:-420,group:'pros',color:'#EF9F27',tc:'#1a0a00',r:60,sub:'Più Soldi — Pain: pochi lead e pochi clienti',desc:'3 Pianeti · 9 Pilastri · 9 Framework operativi'},
+{id:'attr',label:'Pianeta\nAttrazione',x:300,y:-750,group:'pros',color:'#2a1a00',border:'#EF9F27',tc:'#FAC775',rw:140,rh:52,sub:'Pain: Pochi clienti → Lead ogni giorno',desc:'Presenza riconoscibile · Autorità nel mercato · Generazione domanda costante',plan:'attr'},
+{id:'fw01',label:'Creare il\nProprio Pubblico',x:60,y:-900,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 1 — Creare il proprio pubblico',desc:'Avatar 5D · Positioning Statement 1 frase · 1 canale primario 30gg · contenuto a 1 persona · misura contatti in entrata',plan:'attr',uso:['Lead Magnet','Modulo Academy'],pilastro:'Creare il proprio pubblico'},
+{id:'fw02',label:'Diventare la\nGuida del Mercato',x:60,y:-1010,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 2 — Diventare la guida del mercato',desc:'3 verità scomode · Vecchio vs Nuovo modo · 3 risultati clienti con numeri · contenuto pillar · 1 deepdive/sett',plan:'attr',uso:['Video YouTube','Modulo Academy'],pilastro:'Diventare la guida del mercato'},
+{id:'fw03',label:'Generare\nDomanda',x:60,y:-790,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 3 — Generare domanda',desc:'MicroMagnet specifico · landing + 5 email · 3 contenuti/sett con CTA · budget ads 5€/giorno · analisi opt-in settimanale',plan:'attr',uso:['Lead Magnet','Video YouTube','Modulo Academy'],pilastro:'Generare domanda'},
+{id:'conv',label:'Pianeta\nConversione',x:760,y:-600,group:'pros',color:'#2a1a00',border:'#EF9F27',tc:'#FAC775',rw:140,rh:52,sub:'Pain: Poche vendite → Vendite ogni settimana',desc:'Offerta chiara · Flussi di vendita strutturati · Ciclo promozionale costante',plan:'conv'},
+{id:'fw04',label:'Creare la\nGiusta Offerta',x:1000,y:-750,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 4 — Creare la giusta offerta',desc:'4 livelli: Free→Ingresso→Core→High Ticket · promessa+prezzo per livello · testa con 5 call prima degli ads',plan:'conv',uso:['Modulo Academy','Video YouTube'],pilastro:'Creare la giusta offerta'},
+{id:'fw05',label:'Avere Flussi\ndi Vendita',x:1000,y:-600,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 5 — Avere flussi di vendita',desc:'Connetti→Qualifica→Converti · domanda binaria · Gap+Bisogno+Aiuto · smoke bomb · 5 conversazioni qualificate/sett',plan:'conv',uso:['Lead Magnet','Video YouTube','Modulo Academy'],pilastro:'Avere flussi di vendita'},
+{id:'fw06',label:'Ciclo\nPromozionale',x:1000,y:-450,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 6 — Ciclo promozionale',desc:'Ciclo 6 settimane · max 2 offerte · calendario annuale 8 cicli · nurturing preparatorio · ottimizza 1 variabile/ciclo',plan:'conv',uso:['Lead Magnet','Modulo Academy'],pilastro:'Ciclo promozionale'},
+{id:'viag',label:'Pianeta\nViaggio',x:620,y:-220,group:'pros',color:'#2a1a00',border:'#EF9F27',tc:'#FAC775',rw:140,rh:52,sub:'Pain: Clienti abbandonano → Fidelizzazione',desc:'Customer journey · Proprietà intellettuale · Esperienza cliente premium',plan:'viag'},
+{id:'fw07',label:'Percorso\ndel Cliente',x:880,y:-100,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 7 — Percorso del cliente',desc:'6 fasi journey · emozione+azione+wow per fase · roadmap visiva · checkpoint 30gg · rinnovo come festeggiamento',plan:'viag',uso:['Modulo Academy','Video YouTube'],pilastro:'Percorso del cliente'},
+{id:'fw08',label:'Proprietà\nIntellettuale',x:880,y:20,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 8 — Proprietà intellettuale',desc:'5-7 azioni sistematiche → passi metodo · 3-4 fasi con nome · nome proprietario · visualizzazione grafica · 3 casi studio',plan:'viag',uso:['Modulo Academy','Lead Magnet'],pilastro:'Proprietà intellettuale'},
+{id:'fw09',label:'Esperienza\ndel Cliente',x:880,y:140,group:'pros',color:'#1a1000',border:'#EF9F27',tc:'#F5E0A0',rw:178,rh:50,sub:'Pilastro 9 — Esperienza del cliente',desc:'Mappa tutti i touchpoint · valuta 1-10 · kit benvenuto · 2-3 sorprese positive · referenze al momento di picco',plan:'viag',uso:['Modulo Academy','Lead Magnet'],pilastro:'Esperienza del cliente'},
+// LIB
+{id:'lib',label:'SISTEMA\nLIBERTÀ',x:420,y:420,group:'lib',color:'#378ADD',tc:'#001428',r:60,sub:'Più Tempo — Pain: caos operativo',desc:'3 Pianeti · 9 Pilastri · 9 Framework operativi'},
+{id:'arch2',label:'Pianeta\nArchitettura',x:750,y:270,group:'lib',color:'#001428',border:'#378ADD',tc:'#B5D4F4',rw:140,rh:52,sub:'Pain: Nessun processo → Chiarezza totale',desc:'Documenti di business · Procedure marketing · Gestione interna documentata',plan:'arch2'},
+{id:'fw10',label:'Registri e\nDocumenti Business',x:1000,y:150,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 10 — Registri e documenti',desc:'4 sezioni QG: Brand/Clienti/Offerte/Operatività · 3 avatar · revisione 90gg · regola delle 2 volte',plan:'arch2',uso:['Modulo Academy'],pilastro:'Registri e documenti di business'},
+{id:'fw11',label:'Processi e\nProcedure Marketing',x:1000,y:280,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 11 — Processi marketing',desc:'5 processi ricorrenti → SOP 5 passi · screencast video · salva con date · test con persona esterna',plan:'arch2',uso:['Modulo Academy'],pilastro:'Processi e procedure di marketing'},
+{id:'fw12',label:'Gestione\nInterna',x:1000,y:410,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 12 — Gestione interna',desc:'3 aree: Admin/Clienti/Team · attività per frequenza · Weekly Review 15min venerdì · Kanban · automatizza > 3x/mese',plan:'arch2',uso:['Modulo Academy'],pilastro:'Processi e procedure di gestione interna'},
+{id:'lab',label:'Pianeta\nLaboratorio',x:640,y:680,group:'lib',color:'#001428',border:'#378ADD',tc:'#B5D4F4',rw:140,rh:52,sub:'Pain: Caos strumenti → Strumenti giusti',desc:'CRM attivo · Stack marketing integrato · Dashboard KPI settimanale',plan:'lab'},
+{id:'fw13',label:'CRM\nTools',x:880,y:600,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 13 — CRM tools',desc:'3 pipeline: Lead/Vendita/Cliente · max 5 stage · tag sistematici · 5min review giornaliera · tasso conversione per stage',plan:'lab',uso:['Modulo Academy'],pilastro:'CRM tools'},
+{id:'fw14',label:'Marketing\nTools',x:880,y:730,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 14 — Marketing tools',desc:'Audit stack · 5 funzioni essenziali · tool tutti connessi · 3 automazioni base · prova sempre prima con quelli che hai',plan:'lab',uso:['Modulo Academy','Lead Magnet'],pilastro:'Marketing tools'},
+{id:'fw15',label:'Analisi\ne KPI',x:880,y:860,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 15 — Tools analisi e KPI',desc:'5 KPI: Lead/Conversazioni/Tasso/Fatturato/Churn · Google Sheets · 10min lunedì · focus mensile sul KPI più basso',plan:'lab',uso:['Modulo Academy','Lead Magnet'],pilastro:'Tools di analisi e KPI'},
+{id:'molt',label:'Pianeta\nMoltiplicazione',x:300,y:750,group:'lib',color:'#001428',border:'#378ADD',tc:'#B5D4F4',rw:140,rh:52,sub:'Pain: Non riesco a delegare → Delega funzionale',desc:'Team funzionale · AI al servizio · Sistema gestione attività e mindset',plan:'molt'},
+{id:'fw16',label:'Team e\nCollaboratori',x:100,y:900,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 16 — Team e collaboratori',desc:'Classifica attività per energia/delegabilità · primo VA · job description con metriche · prova strutturata 4 settimane',plan:'molt',uso:['Modulo Academy','Video YouTube'],pilastro:'Team e collaboratori'},
+{id:'fw17',label:'AI al\nProprio Servizio',x:100,y:1030,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 17 — AI al proprio servizio',desc:'3 attività ripetitive → prompt master · AI bozza → editi → pubblichi · mai output AI grezzo senza revisione personale',plan:'molt',uso:['Modulo Academy','Video YouTube'],pilastro:'AI al proprio servizio'},
+{id:'fw18',label:'Task Management\ne Mindset',x:100,y:1150,group:'lib',color:'#000e1a',border:'#378ADD',tc:'#B5D4F4',rw:178,rh:50,sub:'Pilastro 18 — Task management e mindset',desc:'3 vittorie/sett · time-block 2h mattina · filtro obiettivo · mindset check settimanale · celebra i progressi piccoli',plan:'molt',uso:['Modulo Academy','Video YouTube','Lead Magnet'],pilastro:'Task management e mindset'},
+// SER
+{id:'ser',label:'SISTEMA\nSERENITÀ',x:-420,y:420,group:'ser',color:'#639922',tc:'#061200',r:60,sub:'Meno Stress — Pain: business stressante e solitario',desc:'3 Pianeti · 9 Pilastri · 9 Framework operativi'},
+{id:'buss',label:'Pianeta\nBussola',x:-200,y:700,group:'ser',color:'#0a1e05',border:'#639922',tc:'#C0DD97',rw:140,rh:52,sub:'Pain: Incertezza → Know-how stabile h24',desc:'Supporto sempre raggiungibile · Knowledge base · Onboarding strutturato',plan:'buss'},
+{id:'fw19',label:'Canali Assistenza\nChiari e H24',x:60,y:850,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 19 — Canali assistenza h24',desc:'3 tier: Autoservizio/Community/Diretto · SLA per canale · FAQ Vivente · welcome automatico · misura domande ripetute',plan:'buss',uso:['Modulo Academy'],pilastro:'Canali di assistenza h24'},
+{id:'fw20',label:'Knowledge Base\ne Tutorial',x:60,y:980,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 20 — Knowledge base e tutorial',desc:'20 domande reali → video+guida+FAQ · 4 livelli navigazione · aggiorna ogni trimestre · link KB in ogni risposta',plan:'buss',uso:['Modulo Academy'],pilastro:'Knowledge base e tutorial completi'},
+{id:'fw21',label:'Onboarding\ne Chiamate',x:60,y:1110,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 21 — Onboarding',desc:'Giorno 0: sole 3 cose · call 30min gg 1-2 · Prima Azione Fondamentale gg 3-5 · check-in gg 7 · Onboarding Kit',plan:'buss',uso:['Modulo Academy','Lead Magnet'],pilastro:'Percorsi e chiamate di onboarding'},
+{id:'vill',label:'Pianeta\nVillaggio',x:-480,y:750,group:'ser',color:'#0a1e05',border:'#639922',tc:'#C0DD97',rw:140,rh:52,sub:'Pain: Mi sento solo → Network e aiuto totale',desc:'Academy strutturata · Community animata · Networking strutturato tra membri',plan:'vill'},
+{id:'fw22',label:'Accademia\ncon Corsi',x:-700,y:900,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 22 — Accademia con corsi',desc:'Moduli max 20min · Perché/Cosa/Come/Esercizio · checkpoint · Bacheca Risultati · completion rate > 40%',plan:'vill',uso:['Modulo Academy'],pilastro:'Accademia con corsi accessibili'},
+{id:'fw23',label:'Community\ne Forum',x:-700,y:1030,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 23 — Community e forum',desc:'3-5 categorie fisse · 4 rituali Lun/Mer/Ven/Weekend · benvenuto con domanda · 2-3 community leader · misura DAU',plan:'vill',uso:['Modulo Academy'],pilastro:'Community e forum di proprietà'},
+{id:'fw24',label:'Supporto\ne Networking',x:-700,y:1160,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 24 — Supporto e networking',desc:'Directory membri · Networking Sprint mensile 45min · sfide bimestrali · canale referral · celebra le collaborazioni',plan:'vill',uso:['Modulo Academy','Lead Magnet'],pilastro:'Community di supporto e networking'},
+{id:'scud',label:'Pianeta\nScuderia',x:-700,y:400,group:'ser',color:'#0a1e05',border:'#639922',tc:'#C0DD97',rw:140,rh:52,sub:'Pain: Non riesco a implementare → Ho chi mi aiuta',desc:'Tutor personale dedicato · Sessioni Done With You · Servizi Done For You',plan:'scud'},
+{id:'fw25',label:'Tutor\nDedicato',x:-960,y:280,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 25 — Tutor personale dedicato',desc:'1 obiettivo per call · materiali pronti prima · Quick Fix vs Project Call · 3 passi post-sessione · Diario Progressi',plan:'scud',uso:['Modulo Academy'],pilastro:'Tutor personale dedicato'},
+{id:'fw26',label:'Done\nWith You',x:-960,y:410,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 26 — Done With You',desc:'Quick Fix 30min · Project Build 90min · tu strategia, tutor tecnica · test 24h post-sessione · hard stop garantito',plan:'scud',uso:['Modulo Academy'],pilastro:'Done With You'},
+{id:'fw27',label:'Done\nFor You',x:-960,y:540,group:'ser',color:'#050f02',border:'#639922',tc:'#C0DD97',rw:178,rh:50,sub:'Pilastro 27 — Done For You',desc:'Kick-off: obiettivo finale · materiali entro 24h · update metà lavoro · consegna con video-demo · 7gg aggiustamenti',plan:'scud',uso:['Modulo Academy'],pilastro:'Done For You'},
+];
+
+const EDGES=[
+{f:'root',t:'arch',g:'arch'},{f:'arch',t:'drive',g:'arch'},{f:'arch',t:'piani',g:'arch'},{f:'arch',t:'moduli',g:'arch'},{f:'arch',t:'fwarch',g:'arch'},
+{f:'root',t:'pros',g:'pros'},{f:'pros',t:'attr',g:'pros'},{f:'attr',t:'fw01',g:'pros'},{f:'attr',t:'fw02',g:'pros'},{f:'attr',t:'fw03',g:'pros'},
+{f:'pros',t:'conv',g:'pros'},{f:'conv',t:'fw04',g:'pros'},{f:'conv',t:'fw05',g:'pros'},{f:'conv',t:'fw06',g:'pros'},
+{f:'pros',t:'viag',g:'pros'},{f:'viag',t:'fw07',g:'pros'},{f:'viag',t:'fw08',g:'pros'},{f:'viag',t:'fw09',g:'pros'},
+{f:'root',t:'lib',g:'lib'},{f:'lib',t:'arch2',g:'lib'},{f:'arch2',t:'fw10',g:'lib'},{f:'arch2',t:'fw11',g:'lib'},{f:'arch2',t:'fw12',g:'lib'},
+{f:'lib',t:'lab',g:'lib'},{f:'lab',t:'fw13',g:'lib'},{f:'lab',t:'fw14',g:'lib'},{f:'lab',t:'fw15',g:'lib'},
+{f:'lib',t:'molt',g:'lib'},{f:'molt',t:'fw16',g:'lib'},{f:'molt',t:'fw17',g:'lib'},{f:'molt',t:'fw18',g:'lib'},
+{f:'root',t:'ser',g:'ser'},{f:'ser',t:'buss',g:'ser'},{f:'buss',t:'fw19',g:'ser'},{f:'buss',t:'fw20',g:'ser'},{f:'buss',t:'fw21',g:'ser'},
+{f:'ser',t:'vill',g:'ser'},{f:'vill',t:'fw22',g:'ser'},{f:'vill',t:'fw23',g:'ser'},{f:'vill',t:'fw24',g:'ser'},
+{f:'ser',t:'scud',g:'ser'},{f:'scud',t:'fw25',g:'ser'},{f:'scud',t:'fw26',g:'ser'},{f:'scud',t:'fw27',g:'ser'},
+];
+
+// Argomenti formativi — 113 micro-argomenti assegnati ai 27 pilastri
+// tipo: 'Entrambi' | 'Formazione Academy' | 'Social / Content' | 'Lead Magnet'
+// completo: true = ARGOMENTO COMPLETO (guida/corso), false = micro-argomento (post/tip)
+const ARGOMENTI = {
+'fw01':[
+  {n:'001',title:'Avatar 5D: il metodo completo',desc:'Guida completa per creare il profilo del cliente perfetto analizzando chi è, cosa vuole, cosa teme, cosa ha già provato e cosa lo blocca ancora.',tipo:'Entrambi',completo:true},
+  {n:'002',title:'Le 5 domande per trovare la nicchia',desc:'Esercizio pratico per identificare il segmento di mercato più redditizio e in linea con le proprie competenze, evitando il classico errore di parlare a tutti.',tipo:'Lead Magnet',completo:false},
+  {n:'003',title:'Positioning Statement in 1 sola frase',desc:'Formula operativa: Aiuto [chi] a raggiungere [cosa] anche se [obiezione principale]. Con esempi pratici per coach, consulenti e terapeuti.',tipo:'Entrambi',completo:false},
+  {n:'004',title:'Personal branding senza essere ovunque',desc:'Strategia per costruire una presenza distintiva su un singolo canale invece di disperdere energie su tutti i social. Meno piattaforme, più impatto.',tipo:'Social / Content',completo:false},
+  {n:'005',title:'Sistema contenuti: da zero a presenza in 90gg',desc:'Piano operativo completo per costruire autorità online attraverso contenuti coerenti, cadenza fissa e un unico filone tematico dominante. Include calendario editoriale.',tipo:'Entrambi',completo:true},
+],
+'fw02':[
+  {n:'006',title:'Il primo contenuto pillar da esperto',desc:'Un singolo contenuto lungo (video, articolo o post) che esprime la tua filosofia e attira i clienti giusti. Template e struttura inclusi.',tipo:'Social / Content',completo:false},
+  {n:'007',title:'I 3 tipi di contenuto per lead qualificati',desc:'Analisi delle tipologie di post che portano realmente contatti commerciali vs quelli che generano solo like. Con esempi dal mercato italiano.',tipo:'Social / Content',completo:false},
+  {n:'008',title:'Il Manifesto del Coach: guida completa',desc:'Sistema per creare un manifesto ideologico Vecchio modo vs Nuovo modo che polarizza il mercato, attira i clienti giusti e rispinge quelli sbagliati.',tipo:'Entrambi',completo:true},
+  {n:'009',title:'Vecchio modo vs Nuovo modo',desc:'Esercizio in 3 step per identificare le convenzioni del settore che non condividi e costruire il tuo punto di vista originale e difendibile.',tipo:'Social / Content',completo:false},
+  {n:'010',title:'Storie personali per costruire autorità',desc:'Struttura narrativa prima-durante-dopo per raccontare la propria trasformazione in modo che risuoni con il cliente ideale senza sembrare autoreferenziali.',tipo:'Social / Content',completo:false},
+],
+'fw03':[
+  {n:'011',title:'MicroMagnet Method: guida completa',desc:'Sistema completo per creare micro lead magnet ultra-specifici (checklist, script, template) che convertono meglio delle guide generiche e aprono conversazioni commerciali.',tipo:'Entrambi',completo:true},
+  {n:'012',title:'Checklist irresistibile in 45 minuti',desc:'Formula rapida per trasformare una competenza in una checklist scaricabile ad alto tasso di conversione. Include titolo, struttura e CTA finale.',tipo:'Lead Magnet',completo:false},
+  {n:'013',title:'I 5 tipi di lead magnet per coach',desc:'Guida comparativa tra checklist, script, template, mini-corso e webinar: quale formato funziona meglio a seconda del posizionamento e del tipo di offerta.',tipo:'Social / Content',completo:false},
+  {n:'014',title:'Headline lead magnet che viene scaricata',desc:'Formula per titoli di lead magnet ad alto click-through: numero + risultato + tempo + senza obiezione. Con 10 esempi pratici per il mercato coaching.',tipo:'Lead Magnet',completo:false},
+  {n:'015',title:'Landing page che converte',desc:'Anatomia di una pagina opt-in efficace: headline, sotto-titolo, bullet dei benefici, form e micro-rassicurazione. Con template adattabile.',tipo:'Entrambi',completo:false},
+  {n:'016',title:'Organico + ads: lead costanti ogni settimana',desc:'Sistema integrato che combina contenuto organico per la fiducia e un budget ads minimo per il volume. Come far lavorare insieme i due canali in modo sinergico.',tipo:'Formazione Academy',completo:true},
+  {n:'017',title:'5€/giorno in ads per lead qualificati',desc:'Strategia pratica per amplificare il contenuto organico che funziona con un budget minimo. Quale metrica guardare e come ottimizzare nel tempo.',tipo:'Social / Content',completo:false},
+  {n:'018',title:'Content Calendar: 30 giorni in 2 ore',desc:'Sistema di pianificazione editoriale basato su un unico tema mensile declinato in formati diversi. Template settimanale scaricabile incluso.',tipo:'Lead Magnet',completo:false},
+  {n:'019',title:'Idee di contenuto infinite dalla community',desc:'Tecnica per estrarre argomenti di contenuto dalle conversazioni con clienti, DM ricevute e commenti. Il contenuto più efficace viene dalle persone reali.',tipo:'Social / Content',completo:false},
+  {n:'020',title:'Instagram Stories per contatti commerciali',desc:'Struttura delle Stories che porta i follower a mandare un messaggio: domanda aperta, risposta, slide di CTA. Con script template adattabile.',tipo:'Social / Content',completo:false},
+],
+'fw04':[
+  {n:'021',title:'Scala di offerte: dal free all\'high ticket',desc:'Guida completa per strutturare 4 livelli di offerta coerenti (lead magnet, ingresso, core, high ticket) con prezzi, promesse e modalità per ciascuno.',tipo:'Entrambi',completo:true},
+  {n:'022',title:'Il prezzo giusto senza svalutarti',desc:'Metodo per calcolare il prezzo basato sul valore percepito, non sull\'ora lavorata. Con esempi pratici e la formula del prezzo ancora.',tipo:'Social / Content',completo:false},
+  {n:'023',title:'Offerta irresistibile: i 7 elementi',desc:'Anatomia di una offerta ad alta conversione: risultato promesso, bonus, garanzia, scarsità, urgenza, prova sociale e facilità di inizio.',tipo:'Entrambi',completo:false},
+  {n:'024',title:'Pacchetto coaching che si vende da solo',desc:'Template per creare pacchetti con nome evocativo, risultato chiaro, durata definita e prezzo giustificato. Senza dover convincere nessuno.',tipo:'Lead Magnet',completo:false},
+],
+'fw05':[
+  {n:'025',title:'Vendita via chat: sistema completo',desc:'Metodo strutturato in 3 livelli (Connetti, Qualifica, Converti) per vendere su WhatsApp, Instagram DM e Messenger in modo naturale e non invasivo.',tipo:'Entrambi',completo:true},
+  {n:'026',title:'La domanda binaria per qualificare lead',desc:'Tecnica per capire in 30 secondi se un contatto è un potenziale cliente o no. Esempi pratici per diversi tipi di coaching e consulenza.',tipo:'Social / Content',completo:false},
+  {n:'027',title:'Metodo GAP: fare emergere il bisogno reale',desc:'Tecnica di ascolto attivo per far articolare al prospect la distanza tra dove è ora e dove vuole arrivare, senza sembrare un interrogatore.',tipo:'Formazione Academy',completo:false},
+  {n:'028',title:'Obiezione "ci devo pensare" senza pressione',desc:'Risposta in 3 step che esplora il vero blocco dietro al rinvio senza creare pressione. Il 70% dei "ci penso" nasconde una informazione mancante.',tipo:'Social / Content',completo:false},
+  {n:'029',title:'Obiezione "non ho i soldi" in modo autentico',desc:'Distinzione tra non posso permettermelo e non è una priorità adesso. Come rispondere in modo rispettoso che porta a una decisione reale.',tipo:'Social / Content',completo:false},
+  {n:'030',title:'Follow-up che riapre le conversazioni',desc:'Sequenza di 3 messaggi per ricontattare prospect che hanno smesso di rispondere. Tono, timing e contenuto per ogni messaggio.',tipo:'Entrambi',completo:false},
+  {n:'031',title:'Funnel di vendita semplice',desc:'Struttura base di un funnel per coach: opt-in, sequenza email di nurturing, CTA alla call o all\'acquisto. Con esempi di ogni step.',tipo:'Formazione Academy',completo:true},
+  {n:'032',title:'Sequenza email di benvenuto in 5 giorni',desc:'5 email con obiettivo, struttura e tono per portare un nuovo contatto dalla curiosità alla fiducia. Template completo per ogni giorno della sequenza.',tipo:'Entrambi',completo:false},
+  {n:'033',title:'Email di vendita che non sembra vendita',desc:'Struttura storia, lezione, offerta per presentare il proprio servizio in modo narrativo che abbassa le difese e aumenta i click.',tipo:'Entrambi',completo:false},
+],
+'fw06':[
+  {n:'034',title:'Sales page per coach',desc:'Struttura completa: headline, problema, soluzione, prova, offerta, garanzia, CTA. Con copy template adattabile per diversi tipi di servizi.',tipo:'Formazione Academy',completo:false},
+  {n:'035',title:'Ciclo promozionale da 6 settimane',desc:'Sistema per pianificare cicli di offerta ricorrenti con fasi di nurturing, pre-lancio, lancio e follow-up. Il calendario promozionale annuale per coach.',tipo:'Entrambi',completo:true},
+  {n:'036',title:'Lancio prodotto in 7 giorni zero ads',desc:'Strategia di lancio organico in 4 fasi: teasing, annuncio, finestra di vendita, chiusura. Con piano contenuti giornaliero da copiare.',tipo:'Social / Content',completo:false},
+  {n:'037',title:'Webinar che vende senza fare lo show',desc:'Struttura di un webinar educativo che porta i partecipanti a chiedere spontaneamente come lavorare con te. Il metodo educa, trasforma, invita.',tipo:'Entrambi',completo:false},
+  {n:'038',title:'Testimonianze per vendere senza arroganza',desc:'Come raccogliere, formattare e presentare le storie di successo dei clienti in modo che parlino per te. Con template per la richiesta di testimonianza.',tipo:'Entrambi',completo:false},
+  {n:'039',title:'Garanzia soddisfatti o rimborsati',desc:'Come una garanzia ben costruita riduce il rischio percepito del cliente e aumenta le conversioni. Con esempi di garanzie per diversi tipi di servizi.',tipo:'Formazione Academy',completo:false},
+],
+'fw07':[
+  {n:'040',title:'Customer journey: dalla scoperta al rinnovo',desc:'Mappa delle 6 fasi del customer journey con le azioni chiave, le emozioni dominanti e i momenti wow da progettare per ogni passaggio.',tipo:'Entrambi',completo:true},
+  {n:'041',title:'Onboarding: i 7 giorni decisivi',desc:'Sequenza di azioni per i primi 7 giorni di ogni nuovo cliente: cosa mandare, quando chiamare e come far sentire che ha fatto la scelta giusta.',tipo:'Entrambi',completo:false},
+  {n:'042',title:'Roadmap cliente da mostrare nella vendita',desc:'Documento visivo che mostra al prospect dove andrà nel tempo. Chi vede chiaramente il percorso compra più facilmente e abbandona meno.',tipo:'Formazione Academy',completo:false},
+  {n:'043',title:'Checkpoint feedback anti-abbandono',desc:'Sistema di check-in periodici (30-60-90 giorni) per intercettare insoddisfazione nascosta e intervenire prima della disdetta.',tipo:'Formazione Academy',completo:false},
+],
+'fw08':[
+  {n:'044',title:'Documentare il metodo come brand',desc:'Processo per estrarre, strutturare e nominare il proprio metodo unico: passi sistematici, fasi con nome, brand del metodo, visualizzazione grafica.',tipo:'Entrambi',completo:true},
+  {n:'045',title:'Nome del metodo che sembra proprietario',desc:'Formula per creare un nome di metodo memorabile: acronimo, metafora, nome proprio o parola inventata. Con esempi dal coaching internazionale.',tipo:'Social / Content',completo:false},
+  {n:'046',title:'Caso studio che vende al posto tuo',desc:'Struttura in 5 parti per documentare i risultati dei clienti: contesto, problema, soluzione, risultato numerico, citazione autentica.',tipo:'Entrambi',completo:false},
+],
+'fw09':[
+  {n:'047',title:'Upsell e cross-sell etici',desc:'Quando e come proporre prodotti aggiuntivi a clienti esistenti in modo che venga percepito come un servizio e non come una vendita aggressiva.',tipo:'Formazione Academy',completo:false},
+  {n:'048',title:'Customer experience come vantaggio competitivo',desc:'Audit e riprogettazione di tutti i punti di contatto con il cliente: prima, durante e dopo il servizio. Come trasformare l\'esperienza in vantaggio competitivo.',tipo:'Formazione Academy',completo:true},
+  {n:'049',title:'Referenze spontanee senza imbarazzi',desc:'Il momento giusto per chiedere una referenza (dopo la prima vittoria del cliente) e come facilitare il passaparola con un sistema strutturato.',tipo:'Entrambi',completo:false},
+  {n:'050',title:'Programma fedeltà per coach',desc:'Come creare un sistema di riconoscimento per i clienti di lunga data che aumenta la retention e genera referral spontanei e ripetuti.',tipo:'Formazione Academy',completo:false},
+],
+'fw10':[
+  {n:'051',title:'Il Quartier Generale del business',desc:'Sistema per creare e mantenere aggiornata la cartella operativa con Brand Kit, Avatar, Offerte e SOPs. La base che rende il business delegabile e scalabile.',tipo:'Formazione Academy',completo:true},
+  {n:'052',title:'Brand Kit operativo',desc:'Come creare un documento di riferimento con voce del brand, valori, colori, font e tono per ogni canale. Indispensabile prima di delegare qualsiasi contenuto.',tipo:'Formazione Academy',completo:false},
+  {n:'053',title:'SOPs senza impazzire',desc:'Template in 5 passi per documentare qualsiasi processo operativo: obiettivo, chi fa cosa, passo per passo, strumenti e come si misura il successo.',tipo:'Formazione Academy',completo:false},
+  {n:'056',title:'Regola delle 2 volte: quando manca un doc',desc:'Se devi spiegare la stessa cosa più di una volta, manca una procedura. Come usare questa regola per costruire il sistema documentale in modo organico.',tipo:'Social / Content',completo:false},
+],
+'fw11':[
+  {n:'054',title:'Processi marketing da delegare senza perdere qualità',desc:'Guida per creare procedure scritte per ogni attività ricorrente di marketing: piano editoriale, gestione ads, pubblicazione contenuti, follow-up email.',tipo:'Formazione Academy',completo:true},
+  {n:'055',title:'Video SOP: lo schermo vale 10 documenti',desc:'Come usare i video screen-recording (Loom o simili) per documentare processi complessi in modo che chiunque possa replicarli senza farti domande.',tipo:'Social / Content',completo:false},
+],
+'fw12':[
+  {n:'057',title:'Sistema Operativo del business',desc:'Framework per mappare e documentare tutti i flussi organizzativi interni: amministrazione, gestione clienti, comunicazione team. Riduce il carico mentale.',tipo:'Formazione Academy',completo:true},
+  {n:'058',title:'Weekly Review in 15 minuti',desc:'Struttura per la revisione del venerdì: cosa è andato bene, cosa è rimasto in sospeso, cosa va anticipato. Template scaricabile con domande guida.',tipo:'Entrambi',completo:false},
+  {n:'059',title:'Calendario operativo annuale',desc:'Sistema per pianificare in anticipo tutti i cicli promozionali, le revisioni trimestrali e i momenti di pianificazione strategica del proprio anno.',tipo:'Formazione Academy',completo:false},
+],
+'fw13':[
+  {n:'060',title:'CRM attivo: non perdere mai un\'opportunità',desc:'Guida completa per configurare e usare il CRM come strumento commerciale attivo: 3 pipeline, tag sistematici, review quotidiana e metriche mensili.',tipo:'Formazione Academy',completo:true},
+  {n:'061',title:'Pipeline di vendita che dice dove sono i soldi',desc:'Configurazione di una pipeline efficace con max 5 stage, criteri chiari di avanzamento e azione associata a ogni stadio. Mai più lead persi.',tipo:'Formazione Academy',completo:false},
+  {n:'062',title:'Segmentazione CRM: taggare i contatti',desc:'Sistema di tagging per classificare i contatti per fonte, interesse, urgenza e stadio del percorso. Con lista dei tag essenziali per un business di coaching.',tipo:'Formazione Academy',completo:false},
+],
+'fw14':[
+  {n:'063',title:'Stack zero caos: strumenti giusti',desc:'Metodo per fare audit dello stack tecnologico, eliminare le sovrapposizioni e ridurre a 5 funzioni essenziali completamente integrate tra loro.',tipo:'Social / Content',completo:true},
+  {n:'064',title:'Il vero costo del tuo stack tecnologico',desc:'Esercizio pratico per sommare tutti gli abbonamenti mensili e confrontarli con soluzioni integrate. La matematica del tool-sprawl è impietosa.',tipo:'Social / Content',completo:false},
+  {n:'065',title:'Le 3 automazioni base da attivare subito',desc:'Email di benvenuto automatica, sequenza di nurturing, notifica di vendita. Come configurarle in meno di 2 ore su qualsiasi piattaforma.',tipo:'Entrambi',completo:false},
+  {n:'066',title:'Email marketing: lista che compra',desc:'Differenza tra una lista grande e una lista calda. Come nurturare i contatti nel tempo con contenuti di valore che preparano alla vendita in modo naturale.',tipo:'Entrambi',completo:false},
+  {n:'067',title:'WhatsApp Business per coach',desc:'Setup professionale di WhatsApp Business: catalogo, messaggi automatici, etichette e come usarlo per follow-up commerciale e supporto clienti.',tipo:'Entrambi',completo:false},
+  {n:'072',title:'Social Planner: 1 settimana in 1 ora',desc:'Workflow per la produzione e programmazione batch dei contenuti: ideazione, scrittura, grafica, programmazione. Tutto in un solo blocco settimanale.',tipo:'Entrambi',completo:false},
+],
+'fw15':[
+  {n:'068',title:'I 5 numeri da guardare ogni lunedì',desc:'Come scegliere, tracciare e interpretare i KPI essenziali: lead nuovi, conversazioni attive, tasso di chiusura, fatturato mensile e churn. Dashboard in 10 minuti.',tipo:'Entrambi',completo:true},
+  {n:'069',title:'Tasso di conversione: calcolo e azione',desc:'Formula per calcolare il tasso di conversione in ogni fase del funnel e le azioni concrete da intraprendere quando un numero non soddisfa le aspettative.',tipo:'Social / Content',completo:false},
+  {n:'070',title:'CAC: costo di acquisizione cliente',desc:'Calcolo del CAC e come usarlo per valutare la sostenibilità delle campagne ads e la profittabilità complessiva delle offerte proposte.',tipo:'Formazione Academy',completo:false},
+  {n:'071',title:'LTV: quanto vale ogni cliente nel tempo',desc:'Formula per calcolare il valore medio di un cliente nel tempo e come usare questa metrica per giustificare investimenti in acquisizione e retention.',tipo:'Social / Content',completo:false},
+],
+'fw16':[
+  {n:'073',title:'Primo collaboratore senza errori classici',desc:'Guida completa per il primo inserimento: quando assumere, chi cercare, come scrivere la job description, il periodo di prova e il sistema di comunicazione.',tipo:'Entrambi',completo:true},
+  {n:'074',title:'Matrice energia-delegabilità',desc:'Strumento per classificare le attività settimanali per livello di energia richiesta e facilità di delega. Quello che è bassa energia + alta delegabilità si delega subito.',tipo:'Entrambi',completo:false},
+  {n:'075',title:'Virtual Assistant per coach',desc:'Panoramica delle attività delegabili a un VA (email, social, agenda, admin), range di costo realistico e dove trovare VA affidabili per il mercato italiano.',tipo:'Social / Content',completo:false},
+  {n:'076',title:'Da solisti a sistema: onboarding collaboratori',desc:'Processo strutturato per inserire un nuovo collaboratore: osservazione, affiancamento, supervisione, autonomia. Con checklist per ogni fase.',tipo:'Formazione Academy',completo:false},
+  {n:'083',title:'Programma di gruppo da 6 settimane',desc:'Struttura base per trasformare il coaching 1:1 in un programma di gruppo: sessioni settimanali, materiali, community e sistema di accountability.',tipo:'Entrambi',completo:false},
+  {n:'084',title:'Membership vs corso: quale modello scegliere',desc:'Differenza tra un corso one-shot e una membership ricorrente: pro, contro, modelli di prezzo e quando ha senso lanciare uno o l\'altro.',tipo:'Social / Content',completo:false},
+],
+'fw17':[
+  {n:'077',title:'AI per coach: le 5 aree che fanno risparmiare ore',desc:'Panoramica pratica di come usare l\'AI per contenuti, trascrizioni, FAQ, DM tipo e analisi dati. Con prompt master per ogni categoria di utilizzo.',tipo:'Entrambi',completo:true},
+  {n:'078',title:'Prompt master per contenuti con AI',desc:'Struttura per un prompt che replica il tuo stile: tono, vocabolario, formato e pubblico. Con template da personalizzare immediatamente.',tipo:'Social / Content',completo:false},
+  {n:'079',title:'AI per trascrivere sessioni e creare contenuti',desc:'Workflow: registra la sessione, trascrivi con AI, estrai insight, trasforma in contenuto. I tuoi contenuti migliori vengono dal tuo lavoro quotidiano.',tipo:'Social / Content',completo:false},
+  {n:'080',title:'Chatbot AI che risponde al posto tuo',desc:'Come addestrare un agente AI sulle FAQ del tuo business per rispondere automaticamente alle domande ricorrenti su WhatsApp, Instagram e sito web.',tipo:'Formazione Academy',completo:false},
+],
+'fw18':[
+  {n:'081',title:'Time blocking per coach',desc:'Sistema per bloccare il tempo in modo che il lavoro profondo (creazione, strategia, sessioni) non venga interrotto da task reattivi. Con template settimanale.',tipo:'Entrambi',completo:true},
+  {n:'082',title:'Le 3 vittorie della settimana',desc:'Come scegliere ogni domenica le 3 azioni che rendono la settimana un successo. Elimina la sensazione di correre tanto senza avanzare davvero.',tipo:'Social / Content',completo:false},
+],
+'fw19':[
+  {n:'085',title:'Supporto clienti H24 senza di te',desc:'Architettura a 3 livelli (autoservizio, community, diretto) per gestire le richieste di supporto in modo efficiente senza essere sempre reperibili.',tipo:'Formazione Academy',completo:true},
+  {n:'086',title:'FAQ Vivente: knowledge base che si aggiorna',desc:'Sistema per documentare ogni risposta nuova che dai ai clienti e aggiungerla alla knowledge base. In 90 giorni hai l\'80% delle risposte già pronte.',tipo:'Formazione Academy',completo:false},
+  {n:'087',title:'Tempi di risposta senza sembrare scortesi',desc:'Come comunicare chiaramente il SLA (tempo di risposta) per ogni canale, gestendo le aspettative dei clienti senza dover essere sempre reattivi.',tipo:'Social / Content',completo:false},
+],
+'fw20':[
+  {n:'088',title:'Knowledge base per ridurre domande ripetute',desc:'Processo completo per costruire una libreria di tutorial, guide e FAQ partendo dalle domande reali dei clienti. Con struttura di navigazione a 4 livelli.',tipo:'Formazione Academy',completo:true},
+  {n:'089',title:'Video tutorial vs guida scritta: quando usare quale',desc:'Analisi comparativa dei formati di supporto: quando il video funziona meglio del testo e viceversa. Con linee guida per ogni tipo di contenuto formativo.',tipo:'Formazione Academy',completo:false},
+  {n:'090',title:'KB integrata in ogni canale di comunicazione',desc:'Come fare in modo che ogni risposta di supporto includa il link alla KB, educando progressivamente i clienti ad usarla prima di scrivere direttamente.',tipo:'Formazione Academy',completo:false},
+],
+'fw21':[
+  {n:'091',title:'Onboarding perfetto: prima vittoria in 7 giorni',desc:'Sequenza strutturata per i primissimi giorni: email benvenuto, call 30 minuti, Prima Azione Fondamentale, check-in vittoria. Con Onboarding Kit completo.',tipo:'Formazione Academy',completo:true},
+  {n:'092',title:'Kit di benvenuto digitale',desc:'Contenuti del kit ideale: video personale, guida PDF dei primi 7 giorni, accesso alla KB, link alla community e contatto di supporto diretto.',tipo:'Formazione Academy',completo:false},
+  {n:'093',title:'Gestire l\'ansia del cliente che parte',desc:'Script per rispondere all\'ansia da "dove comincio?" che ogni nuovo cliente vive nei primi giorni. Parole e tono che trasmettono sicurezza e direzione.',tipo:'Social / Content',completo:false},
+],
+'fw22':[
+  {n:'094',title:'Corso online che le persone completano davvero',desc:'Principi di instructional design per coach: moduli brevi, struttura Perché-Cosa-Come-Esercizio, checkpoint di implementazione e gamification semplice.',tipo:'Entrambi',completo:true},
+  {n:'095',title:'La regola dei 20 minuti',desc:'Evidenza sulla soglia di attenzione e come strutturare lezioni brevi e complete che il cliente completa realmente invece di guardare al 30%.',tipo:'Social / Content',completo:false},
+  {n:'096',title:'Progressione didattica che porta al risultato',desc:'Tecnica per sequenziare i moduli in modo che ogni lezione costruisca sulla precedente, con checkpoint che verificano l\'apprendimento reale.',tipo:'Formazione Academy',completo:false},
+  {n:'097',title:'Bacheca dei Risultati: prova sociale interna',desc:'Spazio nella community dove i clienti pubblicano le loro vittorie. Genera motivazione, riduce l\'abbandono e produce testimonianze spontanee autentiche.',tipo:'Formazione Academy',completo:false},
+],
+'fw23':[
+  {n:'098',title:'Community online che non muore dopo 90 giorni',desc:'Sistema di animazione con 4 rituali settimanali, categorie fisse del forum, community leader e metriche di salute (DAU). La community attiva è il retention tool più potente.',tipo:'Entrambi',completo:true},
+  {n:'099',title:'I 4 rituali settimanali per la community',desc:'Lunedì (obiettivo), Mercoledì (domanda della settimana), Venerdì (vittoria), Weekend (contenuto bonus). Template completo con script per ogni rituale.',tipo:'Entrambi',completo:false},
+  {n:'100',title:'Accogliere nuovi membri senza farli sparire',desc:'Messaggio di benvenuto personalizzato + domanda di presentazione + assegnazione di un buddy. Il primo giorno determina il livello di engagement futuro.',tipo:'Formazione Academy',completo:false},
+  {n:'101',title:'Community leader: identificarli e trattenerli',desc:'Come individuare i 2-3 membri più attivi e trasformarli in moderatori volontari. Cosa dargli in cambio e come gestire il rapporto nel tempo.',tipo:'Formazione Academy',completo:false},
+],
+'fw24':[
+  {n:'102',title:'Community per networking e collaborazioni',desc:'Struttura per attivare il valore relazionale della community: directory membri, Networking Sprint mensile, sfide collaborative e canale referral.',tipo:'Entrambi',completo:true},
+  {n:'103',title:'Networking Sprint in community',desc:'Formato operativo per un evento mensile di 45 minuti: regole, rotazione, domande guida e come documentare le connessioni create tra i partecipanti.',tipo:'Entrambi',completo:false},
+],
+'fw25':[
+  {n:'104',title:'Sistema supporto: dalla reattività alla struttura',desc:'Guida completa per progettare la propria scuderia operativa: chi risponde quando, con quali tempi, attraverso quali canali.',tipo:'Entrambi',completo:true},
+  {n:'105',title:'Ruoli operativi anche se sei ancora solo',desc:'Strutturare ruoli funzionali (tu come strategist, un VA come executor, un tool come automazione) per avere chiarezza su chi fa cosa nel tuo business.',tipo:'Social / Content',completo:false},
+  {n:'106',title:'Protocollo di delega tecnica',desc:'Sistema per delegare qualsiasi implementazione tecnica con un brief chiaro: obiettivo finale, materiali pronti, criteri di successo e finestra di revisione.',tipo:'Formazione Academy',completo:false},
+],
+'fw26':[
+  {n:'107',title:'Rete di implementatori: VA, freelance, partner',desc:'Dove trovare, come selezionare e come gestire le persone che trasformano le tue idee in sistemi funzionanti. La scuderia non è solo chi lavora per te a tempo pieno.',tipo:'Entrambi',completo:true},
+  {n:'108',title:'Done With You: modello affiancamento',desc:'Come strutturare sessioni operative in cui guidi il cliente nell\'implementazione invece di spiegare teoria. Formato, durata, preparazione e follow-up per sessioni DWY efficaci.',tipo:'Formazione Academy',completo:false},
+  {n:'109',title:'Quando offrire un servizio Done For You',desc:'Come valutare se aggiungere una componente esecutiva alla propria offerta: criteri di sostenibilità, prezzo giusto, perimetro chiaro e gestione delle aspettative.',tipo:'Social / Content',completo:false},
+],
+'fw27':[
+  {n:'110',title:'Sistema di consegna per servizi implementativi',desc:'Processo operativo per erogare servizi dove esegui tu al posto del cliente: kick-off, lavorazione, aggiornamento intermedio, consegna con video-demo e finestra di aggiustamenti.',tipo:'Formazione Academy',completo:true},
+  {n:'111',title:'Mai soli davanti a un blocco tecnico o strategico',desc:'Come costruire la propria rete di supporto professionale: mentor, peer coach, community di settore e partner tecnici. Il sistema che ti sblocca invece di lasciarti bloccato per giorni.',tipo:'Entrambi',completo:true},
+  {n:'112',title:'Tool giusti per la scuderia',desc:'Criteri per selezionare gli strumenti che compongono il cuore operativo del tuo business: compatibilità, curva di apprendimento, supporto disponibile e costo reale nel tempo.',tipo:'Social / Content',completo:false},
+  {n:'113',title:'Sistema operativo replicabile senza di te',desc:'Il vero test di una scuderia funzionante: puoi andare in vacanza 2 settimane e il business non si ferma. Come costruire la documentazione che rende tutto questo possibile.',tipo:'Entrambi',completo:false},
+],
+};
+
+// Mappa tipo argomento → array uso (per tag tooltip e filtro formato)
+function tipoToUso(tipo) {
+  if (tipo === 'Entrambi')          return ['Modulo Academy', 'Video YouTube'];
+  if (tipo === 'Formazione Academy') return ['Modulo Academy'];
+  if (tipo === 'Social / Content')  return ['Video YouTube'];
+  if (tipo === 'Lead Magnet')       return ['Lead Magnet'];
+  return [];
+}
+
+// Costanti riusate dai filtri: id dei pianeti e mappa pianeta → sistema
+const PLANET_IDS = ['attr','conv','viag','arch2','lab','molt','buss','vill','scud'];
+const PLAN_SYS = {attr:'pros',conv:'pros',viag:'pros',arch2:'lib',lab:'lib',molt:'lib',buss:'ser',vill:'ser',scud:'ser'};
+
+// Struttura pianeti ordinata (usata per generare i pulsanti Framework)
+const PLANETS_DEF = [
+  {id:'attr',  label:'Attrazione',     sys:'pros'},
+  {id:'conv',  label:'Conversione',    sys:'pros'},
+  {id:'viag',  label:'Viaggio',        sys:'pros'},
+  {id:'arch2', label:'Architettura',   sys:'lib'},
+  {id:'lab',   label:'Laboratorio',    sys:'lib'},
+  {id:'molt',  label:'Moltiplicazione',sys:'lib'},
+  {id:'buss',  label:'Bussola',        sys:'ser'},
+  {id:'vill',  label:'Villaggio',      sys:'ser'},
+  {id:'scud',  label:'Scuderia',       sys:'ser'},
+];
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: SETUP SVG (bounding box + viewBox)
+// ═══════════════════════════════════════════════════════
+const PAD=250;
+const allX=NODES.map(n=>n.x), allY=NODES.map(n=>n.y);
+const minX=Math.min(...allX)-PAD, maxX=Math.max(...allX)+PAD+300;
+const minY=Math.min(...allY)-PAD, maxY=Math.max(...allY)+PAD+100;
+const VW=maxX-minX, VH=maxY-minY;
+
+const SVG=document.getElementById('svg');
+const NS='http://www.w3.org/2000/svg';
+SVG.setAttribute('width',VW); SVG.setAttribute('height',VH);
+SVG.setAttribute('viewBox',`${minX} ${minY} ${VW} ${VH}`);
+
+// Helper: crea un elemento SVG con attributi e lo appende al parent
+function elv(t,a,p){
+  const e=document.createElementNS(NS,t);
+  Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));
+  if(p)p.appendChild(e);
+  return e;
+}
+
+// Filtri "glow" (drop-shadow colorata) per i nodi
+const defs=elv('defs',{},SVG);
+[['gg','#88C057'],['ga','#EF9F27'],['gb','#378ADD'],['ge','#639922'],['gp','#72243E'],['gw','#2a3a40']].forEach(([id,col])=>{
+  const f=elv('filter',{id,x:'-80%',y:'-80%',width:'260%',height:'260%'},defs);
+  elv('feDropShadow',{dx:'0',dy:'0',stdDeviation:'9','flood-color':col,'flood-opacity':'0.45'},f);
+});
+// Mappa colore → id filtro glow
+const GL={'#88C057':'gg','#EF9F27':'ga','#378ADD':'gb','#639922':'ge','#72243E':'gp','#F4C0D1':'gp','#27500A':'ge','#0C447C':'gb','#283E4A':'gw'};
+
+// Mappa id → nodo (lookup rapido)
+const NM={};
+NODES.forEach(n=>NM[n.id]=n);
+// Scala 2× per dare spazio ai 113 argomenti senza sovrapposizioni
+NODES.forEach(n=>{ n.x*=2; n.y*=2; });
+
+// Layer SVG (ordine di disegno = ordine z)
+const CL=elv('g',{id:'cl'},SVG);   // connessioni principali
+const DCL=elv('g',{id:'dcl'},SVG); // connessioni dettaglio (passi)
+const NL=elv('g',{id:'nl'},SVG);   // nodi principali
+const DL=elv('g',{id:'dl'},SVG);   // nodi dettaglio (passi)
+const HL=elv('g',{id:'hl'},SVG);   // evidenziazione ricerca (sopra a tutto)
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: CONNESSIONI PRINCIPALI
+// ═══════════════════════════════════════════════════════
+EDGES.forEach(e=>{
+  const fn=NM[e.f],tn=NM[e.t];
+  if(!fn||!tn)return;
+  const col=tn.border||tn.color||'#3a5060';
+  const mx=(fn.x+tn.x)/2, my=(fn.y+tn.y)/2;
+  const isDirect=((fn.id==='root')&&tn.r);
+  elv('path',{
+    d:`M ${fn.x} ${fn.y} C ${fn.x*.3+mx*.7} ${fn.y*.3+my*.7} ${mx*.7+tn.x*.3} ${my*.7+tn.y*.3} ${tn.x} ${tn.y}`,
+    fill:'none',stroke:col,
+    'stroke-width':isDirect?'2.5':tn.r?'2':'1.4',
+    'stroke-opacity':'0.42','data-group':e.g
+  },CL);
+});
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: NODI DETTAGLIO (argomenti formativi per pilastro)
+// Per ogni pilastro mostra i micro-argomenti verso l'esterno
+// Nascosti di default, visibili solo quando il pilastro è selezionato via fFW()
+// ═══════════════════════════════════════════════════════
+NODES.filter(n=>n.id.startsWith('fw')&&n.id.length===4).forEach(fw=>{
+  const argomenti=ARGOMENTI[fw.id];
+  if(!argomenti||!argomenti.length) return;
+
+  // Direzione radiale dal nodo padre verso il pilastro
+  const parentEdge=EDGES.find(e=>e.t===fw.id);
+  const par=parentEdge?NM[parentEdge.f]:null;
+  let dx=1,dy=0;
+  if(par){
+    const ddx=fw.x-par.x, ddy=fw.y-par.y;
+    const ln=Math.sqrt(ddx*ddx+ddy*ddy)||1;
+    dx=ddx/ln; dy=ddy/ln;
+  }
+  // Direzione radiale pura: sub-nodi in fila lungo dx,dy (fuori dal centro)
+  const outStart=160, outStep=160;
+  const tot=argomenti.length;
+  const grp=fw.group;
+  const bcol=grp==='pros'?'#EF9F27':grp==='lib'?'#378ADD':'#639922';
+  const bgcol=grp==='pros'?'#0e0600':grp==='lib'?'#00070f':'#020700';
+  const tccol=grp==='pros'?'rgba(235,205,120,.85)':grp==='lib'?'rgba(130,190,240,.85)':'rgba(150,210,110,.85)';
+  const tcDimCol=grp==='pros'?'rgba(235,205,120,.55)':grp==='lib'?'rgba(130,190,240,.55)':'rgba(150,210,110,.55)';
+
+  for(let i=0;i<tot;i++){
+    const arg=argomenti[i];
+    const dist=outStart+i*outStep;
+    const nx=fw.x+dx*dist;
+    const ny=fw.y+dy*dist;
+    const did=`${fw.id}_a${i}`;
+    const drw=145, drh=arg.completo?21:18;
+
+    // Label: numero argomento + prime 4 parole del titolo
+    const words=arg.title.split(' ');
+    const shortTitle=words.slice(0,4).join(' ')+(words.length>4?'…':'');
+    const dlabel=`#${arg.n} ${shortTitle}`;
+
+    // Gruppo del nodo argomento
+    const dg=elv('g',{'data-id':did,'data-group':grp,'data-detail':'1',
+      transform:`translate(${Math.round(nx)},${Math.round(ny)})`,style:'cursor:pointer'},DL);
+
+    // Rettangolo: ARGOMENTO COMPLETO più spesso e luminoso, micro-argomento più sottile
+    elv('rect',{x:-drw/2,y:-drh/2,width:drw,height:drh,rx:6,ry:6,
+      fill:bgcol,
+      stroke:bcol,
+      'stroke-width':arg.completo?'1.4':'0.8',
+      'stroke-opacity':arg.completo?'0.9':'0.55'},dg);
+
+    // Etichetta testo (1 riga, font size variabile)
+    const dfs=arg.completo?7:6.5;
+    elv('text',{x:0,y:0,
+      'text-anchor':'middle','dominant-baseline':'middle',
+      fill:arg.completo?tccol:tcDimCol,
+      'font-size':dfs,'font-weight':arg.completo?'800':'600',
+      'font-family':'-apple-system,sans-serif','pointer-events':'none'},dg).textContent=dlabel;
+
+    // Tooltip: titolo completo + desc + tipo → uso tags
+    const uso=tipoToUso(arg.tipo);
+    dg.addEventListener('mouseenter',e=>showT(e,{
+      label:arg.title,
+      sub:`#${arg.n} · ${arg.tipo}${arg.completo?' · Argomento Completo':' · Micro-argomento'}`,
+      desc:arg.desc,color:bcol,group:grp,
+      pilastro:fw.pilastro||'',plan:fw.plan||'',
+      uso:uso
+    }));
+    dg.addEventListener('mousemove',moveT);
+    dg.addEventListener('mouseleave',hideT);
+
+    // Connessione pilastro → argomento
+    elv('line',{x1:fw.x,y1:fw.y,x2:Math.round(nx),y2:Math.round(ny),
+      stroke:bcol,'stroke-width':arg.completo?'1':'0.7',
+      'stroke-opacity':arg.completo?'0.3':'0.18','data-group':grp},DCL);
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: NODI PRINCIPALI
+// ═══════════════════════════════════════════════════════
+function drawN(n,layer){
+  const g=elv('g',{'data-id':n.id,'data-group':n.group,'data-plan':n.plan||'',
+    transform:`translate(${n.x},${n.y})`,style:'cursor:pointer'},layer);
+
+  if(n.r){
+    // Nodo circolare (radice, sistemi, architettura)
+    const c=elv('circle',{r:n.r,fill:n.color,stroke:'rgba(255,255,255,.2)','stroke-width':'1.5'},g);
+    const gid=GL[n.color]||'';
+    if(gid)c.setAttribute('filter',`url(#${gid})`);
+  }else{
+    // Nodo rettangolare (pianeti, framework, asset)
+    const rw=n.rw||120, rh=n.rh||44;
+    const rect=elv('rect',{x:-rw/2,y:-rh/2,width:rw,height:rh,rx:7,ry:7,
+      fill:n.color||'#0f191d',stroke:n.border||'#2a3a40','stroke-width':'1.3'},g);
+    const gid=GL[n.border||n.color]||'';
+    if(gid)rect.setAttribute('filter',`url(#${gid})`);
+  }
+
+  // Etichetta multi-riga
+  const lines=n.label.split('\n');
+  const fs=n.r>65?12.5:n.r>50?11:n.rh>48?9.5:n.rh>42?9:n.rh>34?8:7.5;
+  const lh=fs*1.28;
+  lines.forEach((line,i)=>{
+    elv('text',{x:0,y:(-(lines.length-1)/2+i)*lh,
+      'text-anchor':'middle','dominant-baseline':'middle',
+      fill:n.tc||'#e0e0e0','font-size':fs,'font-weight':'800',
+      'font-family':'-apple-system,sans-serif','pointer-events':'none'},g).textContent=line;
+  });
+
+  g.addEventListener('mouseenter',e=>showT(e,n));
+  g.addEventListener('mousemove',moveT);
+  g.addEventListener('mouseleave',hideT);
+}
+NODES.forEach(n=>drawN(n,NL));
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: MINI-MAPPA
+// ═══════════════════════════════════════════════════════
+const MM=document.getElementById('mm');
+const mmSVG=document.getElementById('mm-svg');
+const mmVP=document.getElementById('mm-vp');
+const MMW=180,MMH=110;
+const mmScale=Math.min(MMW/VW,MMH/VH);
+mmSVG.setAttribute('width',MMW);mmSVG.setAttribute('height',MMH);
+
+// Disegna i nodi in miniatura
+NODES.forEach(n=>{
+  const mx=(n.x-minX)*mmScale, my=(n.y-minY)*mmScale;
+  const col=n.color||'#3a5060';
+  const r=n.r?Math.max(3,n.r*mmScale):3;
+  elv('circle',{cx:mx,cy:my,r:Math.min(r,5),fill:col,opacity:'0.7'},mmSVG);
+});
+
+// Aggiorna il rettangolo della porzione visibile (preciso grazie a transform-origin:0 0)
+function updateMM(){
+  const wr=wrap.getBoundingClientRect();
+  const ww=wr.width, wh=wr.height;
+  // Angolo alto-sinistra del viewport in coordinate SVG
+  const svgX=(-tx)/sc+minX, svgY=(-ty)/sc+minY;
+  const svgW=ww/sc, svgH=wh/sc;
+  // Conversione in coordinate mini-mappa
+  const mmx=(svgX-minX)*mmScale, mmy=(svgY-minY)*mmScale;
+  const mmw=svgW*mmScale, mmh=svgH*mmScale;
+  const clx=Math.max(0,mmx), cly=Math.max(0,mmy);
+  const clw=Math.min(MMW,mmx+mmw)-clx, clh=Math.min(MMH,mmy+mmh)-cly;
+  mmVP.style.left=clx+'px'; mmVP.style.top=cly+'px';
+  mmVP.style.width=Math.max(4,clw)+'px'; mmVP.style.height=Math.max(4,clh)+'px';
+}
+
+// Click/drag sulla mini-mappa: centra la vista principale sul punto indicato
+function mmNavigate(e){
+  const r=MM.getBoundingClientRect();
+  const mx=e.clientX-r.left, my=e.clientY-r.top;
+  // Coordinate mini-mappa → coordinate SVG
+  const svgX=mx/mmScale+minX, svgY=my/mmScale+minY;
+  goTo(svgX,svgY,sc); // mantiene lo zoom corrente
+}
+let mmDrag=false;
+MM.addEventListener('mousedown',e=>{ mmDrag=true; mmNavigate(e); e.preventDefault(); });
+window.addEventListener('mousemove',e=>{ if(mmDrag) mmNavigate(e); });
+window.addEventListener('mouseup',()=>{ mmDrag=false; });
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: TOOLTIP
+// ═══════════════════════════════════════════════════════
+const tip=document.getElementById('tip');
+function showT(e,n){
+  // Risolve il pianeta padre (per fw nodes): il label inizia già con "Pianeta", no prefisso aggiuntivo
+  const planNode=n.plan?NODES.find(x=>x.id===n.plan):null;
+  const planLabel=planNode?planNode.label.replace('\n',' '):(n.plan||'');
+  const isPillar=n.id&&/^fw\d\d$/.test(n.id);
+  const path=n.plan?(planLabel+' ▸ '):isPillar?'Pilastro ▸ ':'';
+  document.getElementById('tp').textContent=path+(n.pilastro||'');
+  document.getElementById('tn').textContent=n.label.replace(/\n/g,' ');
+  document.getElementById('tn').style.color=n.border||n.color||'#88C057';
+  document.getElementById('ts').textContent=n.sub||'';
+  document.getElementById('td').textContent=n.desc||'';
+  // Tag uso: mostrati SOLO al livello framework/tattica (nodo passato con uso esplicito),
+  // NON sui nodi pilastro (fw01-fw27) né sui pianeti
+  const tt=document.getElementById('tt');
+  tt.innerHTML='';
+  const usoList=(isPillar?[]:(n.uso||[]));
+  usoList.forEach(u=>{
+    const s=document.createElement('span');
+    s.className='tip-tag '+(u==='Lead Magnet'?'t-lm':u==='Video YouTube'?'t-yt':'t-ac');
+    s.textContent=u==='Lead Magnet'?'🧲 Lead Magnet':u==='Video YouTube'?'▶ Video YouTube':'📚 Modulo Academy';
+    tt.appendChild(s);
+  });
+  tip.classList.add('show'); moveT(e);
+}
+function moveT(e){
+  let x=e.clientX+16, y=e.clientY-12;
+  if(x+315>window.innerWidth) x=e.clientX-325;
+  if(y+160>window.innerHeight) y=e.clientY-175;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideT(){ tip.classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: PAN & ZOOM — centrato sul cursore
+// ═══════════════════════════════════════════════════════
+const wrap=document.getElementById('wrap');
+let tx=0,ty=0,sc=1;
+let drag=false,lx=0,ly=0;
+// Ultima posizione nota del cursore DENTRO il canvas (per i pulsanti +/−)
+let lastMX=null, lastMY=null;
+
+function applyT(){
+  SVG.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;
+  document.getElementById('zl').textContent=Math.round(sc*100)+'%';
+  updateMM();
+}
+
+// Zoom mantenendo fermo il punto (px,py) in coordinate viewport
+function zoomAt(factor,px,py){
+  sc=Math.max(0.05,Math.min(6,sc*factor));
+  tx=px-(px-tx)*factor;
+  ty=py-(py-ty)*factor;
+  applyT();
+}
+
+// Zoom da pulsante: usa l'ultima posizione del cursore nel canvas,
+// con fallback al centro del viewport se il mouse non è ancora entrato
+function zBy(f){
+  const r=wrap.getBoundingClientRect();
+  const px=(lastMX!==null)?lastMX:r.width/2;
+  const py=(lastMY!==null)?lastMY:r.height/2;
+  zoomAt(f,px,py);
+}
+
+// Adatta tutta la mappa al viewport
+function fit(){
+  const r=wrap.getBoundingClientRect();
+  sc=Math.min(r.width/VW,r.height/VH)*0.88;
+  tx=(r.width-VW*sc)/2-minX*sc;
+  ty=(r.height-VH*sc)/2-minY*sc;
+  applyT();
+}
+
+// Centra la vista su coordinate SVG specifiche (zoom opzionale)
+function goTo(svgX,svgY,newSc){
+  const r=wrap.getBoundingClientRect();
+  sc=newSc||sc;
+  tx=r.width/2-(svgX-minX)*sc;
+  ty=r.height/2-(svgY-minY)*sc;
+  applyT();
+}
+
+// Traccia la posizione del cursore nel canvas (serve a zBy)
+wrap.addEventListener('mousemove',e=>{
+  const r=wrap.getBoundingClientRect();
+  lastMX=e.clientX-r.left;
+  lastMY=e.clientY-r.top;
+});
+
+// Wheel — zoom sul cursore
+wrap.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const r=wrap.getBoundingClientRect();
+  const px=e.clientX-r.left;
+  const py=e.clientY-r.top;
+  const factor=(e.deltaY<0)?1.12:0.89;
+  zoomAt(factor,px,py);
+},{passive:false});
+
+// Pan con il mouse (drag sullo sfondo)
+wrap.addEventListener('mousedown',e=>{
+  if(e.target.closest('[data-id]')) return;
+  drag=true; lx=e.clientX; ly=e.clientY;
+  wrap.classList.add('panning');
+});
+window.addEventListener('mousemove',e=>{
+  if(!drag) return;
+  tx+=e.clientX-lx; ty+=e.clientY-ly;
+  lx=e.clientX; ly=e.clientY;
+  applyT();
+});
+window.addEventListener('mouseup',()=>{
+  drag=false; wrap.classList.remove('panning');
+});
+
+// Pan & pinch-zoom su touch
+let ltd=0,touch1={x:0,y:0};
+wrap.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    drag=true;
+    lx=e.touches[0].clientX; ly=e.touches[0].clientY;
+  }
+  if(e.touches.length===2){
+    ltd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                   e.touches[0].clientY-e.touches[1].clientY);
+    touch1={x:(e.touches[0].clientX+e.touches[1].clientX)/2,
+            y:(e.touches[0].clientY+e.touches[1].clientY)/2};
+  }
+},{passive:true});
+wrap.addEventListener('touchmove',e=>{
+  if(e.touches.length===1&&drag){
+    tx+=e.touches[0].clientX-lx; ty+=e.touches[0].clientY-ly;
+    lx=e.touches[0].clientX; ly=e.touches[0].clientY; applyT();
+  }
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
+                       e.touches[0].clientY-e.touches[1].clientY);
+    const cx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    const cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    const r=wrap.getBoundingClientRect();
+    zoomAt(d/ltd,cx-r.left,cy-r.top);
+    ltd=d;
+  }
+},{passive:true});
+wrap.addEventListener('touchend',()=>{drag=false;});
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: FILTRI (logica invariata rispetto all'originale)
+// ═══════════════════════════════════════════════════════
+let curSys='all', curPlan='', curFmt='all', curFW='';
+let detOn=true, connOn=true;  // argomenti visibili di default
+
+function applyFilters(){
+  NL.querySelectorAll('[data-id]').forEach(nd=>{
+    const g=nd.getAttribute('data-group');
+    const plan=nd.getAttribute('data-plan')||'';
+    // Filtro sistema
+    const sysOk=(curSys==='all')||(g===curSys);
+    // Filtro pianeta
+    const planOk=(!curPlan)||(plan===curPlan)||(nd.getAttribute('data-id')===curPlan)||
+                 ((g===curSys)&&(!plan)&&(curSys!=='all')&&(!PLANET_IDS.includes(plan)));
+    // Filtro formato
+    const nid=nd.getAttribute('data-id');
+    const ndata=NM[nid];
+    let fmtOk=true;
+    if((curFmt!=='all')&&nid&&nid.startsWith('fw')&&(nid.length===4)){
+      fmtOk=ndata&&ndata.uso&&ndata.uso.includes(curFmt);
+    }
+    const show=sysOk&&planOk&&fmtOk;
+    nd.style.opacity=show?'1':'0.04';
+    nd.style.pointerEvents=show?'all':'none';
+  });
+  CL.querySelectorAll('path').forEach(l=>{
+    const g=l.getAttribute('data-group');
+    const show=connOn&&((curSys==='all')||(g===curSys));
+    l.style.opacity=show?'0.42':'0.02';
+  });
+  DL.querySelectorAll('[data-id]').forEach(nd=>{
+    const g=nd.getAttribute('data-group');
+    const show=detOn&&((curSys==='all')||(g===curSys));
+    nd.style.opacity=show?'0.85':'0.02';
+    nd.style.pointerEvents=show?'all':'none';
+  });
+  DCL.querySelectorAll('line').forEach(l=>{
+    const g=l.getAttribute('data-group');
+    const show=detOn&&connOn&&((curSys==='all')||(g===curSys));
+    l.style.opacity=show?'0.22':'0.01';
+  });
+}
+
+function fSys(f){
+  curSys=f; curPlan='';
+  clearFW();
+  // Reset bottoni sistema
+  ['pros','lib','ser','arch','all'].forEach(id=>{
+    const b=document.getElementById('f-'+id);
+    if(b) b.classList.remove('on');
+  });
+  if(f==='all') document.getElementById('f-all').classList.add('on');
+  else document.getElementById('f-'+f)?.classList.add('on');
+  // Reset bottoni pianeta
+  PLANET_IDS.forEach(id=>{
+    document.getElementById('p-'+id)?.classList.remove('on');
+  });
+  applyFilters();
+  updateFilterStatus();
+}
+
+function fPlan(p){
+  clearFW();
+  if(curPlan===p){
+    // Click sullo stesso pianeta → deseleziona
+    curPlan='';
+    document.getElementById('p-'+p)?.classList.remove('on');
+  }else{
+    // Reset tutti i bottoni pianeta
+    PLANET_IDS.forEach(id=>{
+      document.getElementById('p-'+id)?.classList.remove('on');
+    });
+    curPlan=p;
+    document.getElementById('p-'+p)?.classList.add('on');
+    // Imposta automaticamente il sistema del pianeta
+    const sys=PLAN_SYS[p];
+    if(sys){curSys=sys;}
+    // Isola pianeta selezionato + suoi framework + root + sistema padre
+    NL.querySelectorAll('[data-id]').forEach(nd=>{
+      const plan=nd.getAttribute('data-plan');
+      const nid=nd.getAttribute('data-id');
+      const isPlan=(nid===p);
+      const isFwOfPlan=(plan===p);
+      const isRoot=(nid==='root');
+      const isSys=(nid===sys);
+      const show=isPlan||isFwOfPlan||isRoot||isSys;
+      nd.style.opacity=show?'1':'0.04';
+      nd.style.pointerEvents=show?'all':'none';
+    });
+    CL.querySelectorAll('path').forEach(l=>{
+      const g=l.getAttribute('data-group');
+      l.style.opacity=(connOn&&g===sys)?'0.42':'0.02';
+    });
+    DL.querySelectorAll('[data-id]').forEach(nd=>{
+      const g=nd.getAttribute('data-group');
+      const show=detOn&&(g===sys);
+      nd.style.opacity=show?'0.85':'0.02';
+      nd.style.pointerEvents=show?'all':'none';
+    });
+    DCL.querySelectorAll('line').forEach(l=>{
+      const g=l.getAttribute('data-group');
+      l.style.opacity=(detOn&&connOn&&g===sys)?'0.22':'0.01';
+    });
+    updateFilterStatus();
+    return;
+  }
+  applyFilters();
+  updateFilterStatus();
+}
+
+function fFmt(f){
+  clearFW();
+  curFmt=f;
+  ['lm','yt','ac'].forEach(id=>{document.getElementById('f-'+id)?.classList.remove('on');});
+  document.getElementById('f-fmt-all')?.classList.remove('on');
+  if(f==='all'){
+    document.getElementById('f-fmt-all')?.classList.add('on');
+  }else{
+    const map={'Lead Magnet':'lm','Video YouTube':'yt','Modulo Academy':'ac'};
+    document.getElementById('f-'+map[f])?.classList.add('on');
+  }
+  applyFilters();
+  updateFilterStatus();
+}
+
+// Toggle visibilità passi
+function togDet(){
+  detOn=!detOn;
+  DL.style.display=detOn?'':'none';
+  DCL.style.display=detOn?'':'none';
+  document.getElementById('bdet').textContent='⬛ Argomenti '+(detOn?'ON':'OFF');
+  document.getElementById('bdet').classList.toggle('on',detOn);
+  if(!detOn && curFW){ clearFW(); }
+}
+
+// Toggle visibilità connessioni
+function togConn(){
+  connOn=!connOn;
+  CL.style.opacity=connOn?'1':'0';
+  DCL.style.opacity=connOn?'1':'0';
+  document.getElementById('bconn').textContent='— Connessioni '+(connOn?'ON':'OFF');
+  document.getElementById('bconn').classList.toggle('on',connOn);
+}
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: SIDEBAR — apertura/chiusura, stato filtri, reset
+// ═══════════════════════════════════════════════════════
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const open=sb.classList.toggle('open');
+  document.body.classList.toggle('sidebar-open',open);
+  document.getElementById('btnFiltri').classList.toggle('on',open);
+}
+
+// Aggiorna l'indicatore "filtri attivi" e il badge sul pulsante Filtri
+function updateFilterStatus(){
+  const sysNames={pros:'Prosperità',lib:'Libertà',ser:'Serenità',arch:'Architettura'};
+  const planNames={attr:'Attrazione',conv:'Conversione',viag:'Viaggio',arch2:'Architettura',
+                   lab:'Laboratorio',molt:'Moltiplicazione',buss:'Bussola',vill:'Villaggio',scud:'Scuderia'};
+  const parts=[];
+  if(curSys!=='all') parts.push('Sistema: '+sysNames[curSys]);
+  if(curPlan) parts.push('Pianeta: '+planNames[curPlan]);
+  if(curFW){
+    const fwNode=NM[curFW];
+    const fwLabel=fwNode?fwNode.label.replace('\n',' ').replace('™','').trim():curFW;
+    parts.push('Framework: '+fwLabel);
+  }
+  if(curFmt!=='all') parts.push('Formato: '+curFmt);
+  const sv=(document.getElementById('searchBox').value||'').trim();
+  if(sv) parts.push('Ricerca: "'+sv+'"');
+
+  const el=document.getElementById('filterStatus');
+  el.innerHTML=parts.length?parts.map(p=>'<b>'+p.split(':')[0]+':</b>'+p.split(':').slice(1).join(':')).join(' · '):'Nessun filtro attivo';
+  document.getElementById('btnFiltri').classList.toggle('has-filters',parts.length>0);
+}
+
+// Reset globale: sistema, pianeta, formato, framework e ricerca
+function resetAll(){
+  clearFW();
+  fSys('all');                 // azzera sistema + pianeta
+  fFmt('all');                 // azzera formato
+  document.getElementById('searchBox').value='';
+  doSearch('');                // azzera ricerca + evidenziazioni
+}
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: RICERCA — evidenzia i nodi corrispondenti
+// ═══════════════════════════════════════════════════════
+function doSearch(q){
+  q=(q||'').trim().toLowerCase();
+  HL.innerHTML='';               // pulisci evidenziazioni precedenti
+  const matches=[];
+
+  if(q){
+    NODES.forEach(n=>{
+      // Cerca in label, pilastro, sub e desc
+      const hay=[n.label,n.pilastro,n.sub,n.desc].filter(Boolean).join(' ')
+                 .replace(/\n/g,' ').toLowerCase();
+      if(hay.includes(q)) matches.push(n);
+    });
+    // Disegna un anello pulsante attorno a ogni nodo trovato
+    matches.forEach(n=>{
+      if(n.r){
+        elv('circle',{cx:n.x,cy:n.y,r:n.r+10,fill:'none',
+          stroke:'#88C057','stroke-width':'3','class':'hl-ring'},HL);
+      }else{
+        const rw=(n.rw||120)+18, rh=(n.rh||44)+18;
+        elv('rect',{x:n.x-rw/2,y:n.y-rh/2,width:rw,height:rh,rx:11,ry:11,
+          fill:'none',stroke:'#88C057','stroke-width':'3','class':'hl-ring'},HL);
+      }
+    });
+  }
+
+  // Conteggio risultati
+  const res=document.getElementById('searchRes');
+  res.textContent=q?(matches.length+' risultat'+(matches.length===1?'o':'i')):'';
+
+  // Centra sul primo risultato senza modificare lo zoom corrente
+  if(matches.length){ goTo(matches[0].x,matches[0].y,sc); }
+
+  updateFilterStatus();
+}
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: FILTRO FRAMEWORK
+// ═══════════════════════════════════════════════════════
+
+// Deseleziona il framework corrente e ripristina visibilità argomenti
+function clearFW(){
+  if(!curFW) return;
+  document.getElementById('fw-btn-'+curFW)?.classList.remove('on');
+  curFW='';
+  if(!detOn){
+    DL.style.display='none';
+    DCL.style.display='none';
+  } else {
+    // Ripristina tutti i nodi argomento a piena visibilità
+    DL.querySelectorAll('[data-id]').forEach(nd=>{
+      nd.style.opacity='';
+      nd.style.pointerEvents='';
+    });
+    DCL.querySelectorAll('line').forEach(l=>{ l.style.opacity=''; });
+  }
+}
+
+// Isola un singolo framework: root + sistema + pianeta + fw + tutti i suoi passi
+function fFW(fwId){
+  if(curFW===fwId){
+    // Click sullo stesso fw → deseleziona e torna alla vista per pianeta/sistema
+    clearFW();
+    // Ripristina la visibilità in base ai filtri sistema/pianeta correnti
+    if(curPlan) fPlan(curPlan);
+    else applyFilters();
+    updateFilterStatus();
+    return;
+  }
+  // Deseleziona eventuale fw precedente
+  clearFW();
+  curFW=fwId;
+  document.getElementById('fw-btn-'+fwId)?.classList.add('on');
+
+  const fw=NM[fwId];
+  if(!fw) return;
+  const sys=fw.group;
+  const plan=fw.plan;
+
+  // Aggiorna lo stato dei filtri sistema/pianeta per coerenza con l'indicatore
+  curSys=sys; curPlan=plan;
+  // Reset visuale bottoni sistema/pianeta
+  ['pros','lib','ser','arch','all'].forEach(id=>{
+    document.getElementById('f-'+id)?.classList.remove('on');
+  });
+  document.getElementById('f-'+sys)?.classList.add('on');
+  PLANET_IDS.forEach(id=>document.getElementById('p-'+id)?.classList.remove('on'));
+  document.getElementById('p-'+plan)?.classList.add('on');
+
+  // Visibilità nodi principali: solo root, sistema, pianeta e questo fw
+  NL.querySelectorAll('[data-id]').forEach(nd=>{
+    const nid=nd.getAttribute('data-id');
+    const show=(nid==='root')||(nid===sys)||(nid===plan)||(nid===fwId);
+    nd.style.opacity=show?'1':'0.04';
+    nd.style.pointerEvents=show?'all':'none';
+  });
+
+  // Connessioni: solo quelle del sistema del fw
+  CL.querySelectorAll('path').forEach(l=>{
+    const g=l.getAttribute('data-group');
+    l.style.opacity=(connOn&&g===sys)?'0.42':'0.02';
+  });
+
+  // Passi dettaglio: mostra i layer e filtra solo i passi di questo pilastro
+  DL.style.display='';
+  DCL.style.display='';
+  DL.querySelectorAll('[data-id]').forEach(nd=>{
+    const did=nd.getAttribute('data-id');
+    const show=did.startsWith(fwId+'_');
+    nd.style.opacity=show?'0.85':'0';
+    nd.style.pointerEvents=show?'all':'none';
+  });
+  DCL.querySelectorAll('line').forEach(l=>{
+    const did=l.getAttribute('data-id')||'';
+    // Mostra solo le linee collegate a questo fw
+    const g=l.getAttribute('data-group');
+    l.style.opacity=(connOn&&g===sys)?'0.22':'0.01';
+  });
+
+  // Centra la vista sul framework selezionato
+  goTo(fw.x,fw.y,Math.max(sc,0.55));
+  updateFilterStatus();
+}
+
+// Genera i pulsanti Framework nella sidebar, raggruppati per Pianeta
+function buildFrameworkSection(){
+  const container=document.getElementById('fw-section');
+  PLANETS_DEF.forEach(planet=>{
+    // Intestazione pianeta (con colore sistema)
+    const h=document.createElement('div');
+    h.className='sb-grp-h '+planet.sys;
+    h.textContent=planet.label;
+    container.appendChild(h);
+
+    const btns=document.createElement('div');
+    btns.className='sb-btns';
+
+    // Trova i framework di questo pianeta in ordine numerico
+    NODES.filter(n=>n.plan===planet.id&&n.id.startsWith('fw')&&n.id.length===4)
+         .sort((a,b)=>a.id.localeCompare(b.id))
+         .forEach(fw=>{
+           const btn=document.createElement('button');
+           btn.id='fw-btn-'+fw.id;
+           btn.className='btn fw-'+planet.sys;
+           // Prima riga dell'etichetta come testo breve; pilastro nel tooltip
+           const shortLabel=fw.label.split('\n')[0].replace('™','').trim();
+           btn.textContent=shortLabel;
+           btn.title=(fw.label.replace('\n',' '))+' — '+(fw.pilastro||'');
+           btn.addEventListener('click',()=>fFW(fw.id));
+           btns.appendChild(btn);
+         });
+    container.appendChild(btns);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// SEZIONE: AVVIO
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  buildFrameworkSection();  // costruisce i 27 pulsanti fw nella sidebar
+  // Argomenti visibili di default
+  setTimeout(fit,100);
+});
+</script>
+</body>
+</html>
