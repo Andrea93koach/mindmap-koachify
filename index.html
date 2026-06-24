@@ -162,6 +162,19 @@ body.sidebar-open .minimap { left: 296px; }
   background: rgba(136,192,87,.06);
 }
 
+/* ── PANNELLO ARCHITETTURA ── */
+.arch-panel {
+  position: fixed; top: 70px; left: 14px; z-index: 50;
+  background: rgba(8,14,18,.96); border: 1px solid rgba(40,62,74,.8);
+  border-radius: 10px; padding: 11px 14px; font-size: 9px; color: #5a7a85;
+  min-width: 168px;
+}
+.arch-panel b { font-size: 9.5px; color: #7aafc0; display: block; margin-bottom: 7px; letter-spacing:.04em; }
+.arch-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.arch-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.arch-panel hr { border: none; border-top: 1px solid rgba(40,62,74,.5); margin: 6px 0; }
+.arch-panel .arch-val { color: #8ab4c0; font-weight: 600; }
+
 /* ── LEGENDA ── */
 .leg {
   position: fixed; bottom: 14px; right: 14px; z-index: 50;
@@ -219,7 +232,6 @@ body.sidebar-open .minimap { left: 296px; }
         <button class="btn pros" id="f-pros" onclick="fSys('pros')">🟡 Prosperità</button>
         <button class="btn lib"  id="f-lib"  onclick="fSys('lib')">🔵 Libertà</button>
         <button class="btn ser"  id="f-ser"  onclick="fSys('ser')">🟢 Serenità</button>
-        <button class="btn arch" id="f-arch" onclick="fSys('arch')">🏗 Architettura</button>
         <button class="btn act on" id="f-all" onclick="fSys('all')">✕ Reset</button>
       </div>
     </div>
@@ -296,6 +308,20 @@ body.sidebar-open .minimap { left: 296px; }
   <div class="mm-viewport" id="mm-vp"></div>
 </div>
 
+<!-- Pannello Architettura Ecosistema (staccato dal canvas) -->
+<div class="arch-panel">
+  <b>🏗 ARCHITETTURA ECOSISTEMA</b>
+  <div class="arch-row"><div class="arch-dot" style="background:#72243E"></div><span>Materiali Drive</span></div>
+  <div style="font-size:8px;color:#3a5060;margin:-3px 0 5px 14px">50 file — masterclass EN</div>
+  <div class="arch-row"><div class="arch-dot" style="background:#283E4A"></div><span>Piani Abbonamento</span></div>
+  <div style="font-size:8px;color:#3a5060;margin:-3px 0 5px 14px">Semplifika €97 · Kresci €157 · Amplifika €247</div>
+  <hr>
+  <div class="arch-row"><div class="arch-dot" style="background:#27500A"></div><span>Moduli Academy</span><span class="arch-val">32</span></div>
+  <div class="arch-row"><div class="arch-dot" style="background:#0C447C"></div><span>Framework Operativi</span><span class="arch-val">27</span></div>
+  <div class="arch-row"><div class="arch-dot" style="background:#88C057"></div><span>Pilastri</span><span class="arch-val">27</span></div>
+  <div class="arch-row"><div class="arch-dot" style="background:#EF9F27"></div><span>Argomenti formativi</span><span class="arch-val">113</span></div>
+</div>
+
 <!-- Legenda colori e gesti -->
 <div class="leg">
   <b>LEGENDA</b>
@@ -326,12 +352,6 @@ body.sidebar-open .minimap { left: 296px; }
 // ═══════════════════════════════════════════════════════
 const NODES=[
 {id:'root',label:'ACADEMY\nKOACHIFY',x:0,y:0,group:'all',color:'#88C057',tc:'#0C1417',r:72,sub:'Ecosistema formativo per Coach, Formatori e Consulenti',desc:'27 Framework Operativi · 32 Moduli · 3 Sistemi Solari · 9 Pianeti · 27 Pilastri'},
-// ARCH
-{id:'arch',label:'ARCHITETTURA\nECOSISTEMA',x:-500,y:0,group:'arch',color:'#283E4A',tc:'#B5D4F4',r:55,sub:'Asset prodotti nella sessione di progettazione',desc:'Materiali Drive · Piani abbonamento · 32 Moduli · 27 Framework'},
-{id:'drive',label:'MATERIALI\nDRIVE',x:-830,y:-210,group:'arch',color:'#1a0a12',border:'#72243E',tc:'#F4C0D1',rw:155,rh:52,sub:'50 file — Taki Moore + formatori esterni',desc:'Trascrizioni masterclass in inglese: Email Marketing · Sell by Chat · Social Content · Lead Gen & Funnel · Mindset & Brand'},
-{id:'piani',label:'PIANI\nABBONAMENTO',x:-830,y:-70,group:'arch',color:'#0f191d',border:'#283E4A',tc:'#B5D4F4',rw:155,rh:52,sub:'Semplifika €97 · Kresci €157 · Amplifika €247',desc:'3 livelli non sequenziali. Semplifika: 12 moduli base. Kresci/Amplifika: 20 moduli avanzati + tutor DWY-DFY'},
-{id:'moduli',label:'32 MODULI\nACADEMY',x:-830,y:70,group:'arch',color:'#0a1a0a',border:'#27500A',tc:'#88C057',rw:155,rh:52,sub:'18 da produrre · 14 da adattare da Drive',desc:'Distribuiti sui 3 Sistemi e 9 Pianeti. Badge Semplifika vs Kresci/Amplifika per ogni modulo'},
-{id:'fwarch',label:'27\nFRAMEWORK',x:-830,y:210,group:'arch',color:'#000e1a',border:'#0C447C',tc:'#B5D4F4',rw:155,rh:52,sub:'1 per Pilastro — Cosa fare + Come in 4-5 passi',desc:'Usabili come Lead Magnet · Video YouTube · Modulo Academy. Struttura operativa completa'},
 // PROS
 {id:'pros',label:'SISTEMA\nPROSPERITÀ',x:420,y:-420,group:'pros',color:'#EF9F27',tc:'#1a0a00',r:60,sub:'Più Soldi — Pain: pochi lead e pochi clienti',desc:'3 Pianeti · 9 Pilastri · 9 Framework operativi'},
 {id:'attr',label:'Pianeta\nAttrazione',x:300,y:-750,group:'pros',color:'#2a1a00',border:'#EF9F27',tc:'#FAC775',rw:140,rh:52,sub:'Pain: Pochi clienti → Lead ogni giorno',desc:'Presenza riconoscibile · Autorità nel mercato · Generazione domanda costante',plan:'attr'},
@@ -377,7 +397,6 @@ const NODES=[
 ];
 
 const EDGES=[
-{f:'root',t:'arch',g:'arch'},{f:'arch',t:'drive',g:'arch'},{f:'arch',t:'piani',g:'arch'},{f:'arch',t:'moduli',g:'arch'},{f:'arch',t:'fwarch',g:'arch'},
 {f:'root',t:'pros',g:'pros'},{f:'pros',t:'attr',g:'pros'},{f:'attr',t:'fw01',g:'pros'},{f:'attr',t:'fw02',g:'pros'},{f:'attr',t:'fw03',g:'pros'},
 {f:'pros',t:'conv',g:'pros'},{f:'conv',t:'fw04',g:'pros'},{f:'conv',t:'fw05',g:'pros'},{f:'conv',t:'fw06',g:'pros'},
 {f:'pros',t:'viag',g:'pros'},{f:'viag',t:'fw07',g:'pros'},{f:'viag',t:'fw08',g:'pros'},{f:'viag',t:'fw09',g:'pros'},
@@ -624,6 +643,8 @@ const NM={};
 NODES.forEach(n=>NM[n.id]=n);
 // Scala 2× per dare spazio ai 113 argomenti senza sovrapposizioni
 NODES.forEach(n=>{ n.x*=2; n.y*=2; });
+// Aumenta separazione tra i 3 sistemi (1.5× aggiuntivo sul loro vettore)
+['pros','lib','ser'].forEach(id=>{ const n=NM[id]; if(n){ n.x=Math.round(n.x*1.5); n.y=Math.round(n.y*1.5); }});
 
 // Layer SVG (ordine di disegno = ordine z)
 const CL=elv('g',{id:'cl'},SVG);   // connessioni principali
