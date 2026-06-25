@@ -641,10 +641,45 @@ const GL={'#88C057':'gg','#EF9F27':'ga','#378ADD':'gb','#639922':'ge','#72243E':
 // Mappa id → nodo (lookup rapido)
 const NM={};
 NODES.forEach(n=>NM[n.id]=n);
-// Scala 2× per dare spazio ai 113 argomenti senza sovrapposizioni
-NODES.forEach(n=>{ n.x*=2; n.y*=2; });
-// Aumenta separazione tra i 3 sistemi (1.5× aggiuntivo sul loro vettore)
-['pros','lib','ser'].forEach(id=>{ const n=NM[id]; if(n){ n.x=Math.round(n.x*1.5); n.y=Math.round(n.y*1.5); }});
+
+// ═══════════════════════════════════════════════════════
+// LAYOUT ALGORITMICO RADIALE — zero sovrapposizioni garantite
+// Ogni fw-pilastro occupa un settore angolare unico →
+// le catene di argomenti puntano in direzioni diverse e non si incrociano mai.
+// ═══════════════════════════════════════════════════════
+(function layoutTree(){
+  const D=Math.PI/180;
+  // Settori angolari per sistema (gradi, in coords SVG y-verso-il-basso)
+  // pros=alto, lib=basso-destra, ser=basso-sinistra
+  const SEC={pros:[-145*D,-35*D], lib:[-25*D,85*D], ser:[95*D,205*D]};
+  const R1=520, R2=980, R3=1380; // raggi: sistema / pianeta / pilastro
+
+  ['pros','lib','ser'].forEach(sysId=>{
+    const [sa,ea]=SEC[sysId];
+    const sc=(sa+ea)/2;
+    NM[sysId].x=Math.round(R1*Math.cos(sc));
+    NM[sysId].y=Math.round(R1*Math.sin(sc));
+
+    const planIds=EDGES.filter(e=>e.f===sysId).map(e=>e.t);
+    const pSpan=(ea-sa)/planIds.length;
+
+    planIds.forEach((planId,pi)=>{
+      const pc=sa+pSpan*(pi+0.5);
+      NM[planId].x=Math.round(R2*Math.cos(pc));
+      NM[planId].y=Math.round(R2*Math.sin(pc));
+
+      const fwIds=EDGES.filter(e=>e.f===planId).map(e=>e.t);
+      const fwSpan=pSpan/fwIds.length;
+
+      fwIds.forEach((fwId,fi)=>{
+        const fc=sa+pSpan*pi+fwSpan*(fi+0.5);
+        NM[fwId].x=Math.round(R3*Math.cos(fc));
+        NM[fwId].y=Math.round(R3*Math.sin(fc));
+      });
+    });
+  });
+  // root rimane a (0,0)
+})();
 
 // Layer SVG (ordine di disegno = ordine z)
 const CL=elv('g',{id:'cl'},SVG);   // connessioni principali
@@ -689,7 +724,7 @@ NODES.filter(n=>n.id.startsWith('fw')&&n.id.length===4).forEach(fw=>{
     dx=ddx/ln; dy=ddy/ln;
   }
   // Direzione radiale pura: sub-nodi in fila lungo dx,dy (fuori dal centro)
-  const outStart=160, outStep=160;
+  const outStart=200, outStep=165;
   const tot=argomenti.length;
   const grp=fw.group;
   const bcol=grp==='pros'?'#EF9F27':grp==='lib'?'#378ADD':'#639922';
